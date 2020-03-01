@@ -13,18 +13,22 @@
 		AF8D3894240B47140099F286 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3888240B47140099F286 /* shader.cpp */; };
 		AF8D3895240B47140099F286 /* OBJObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3889240B47140099F286 /* OBJObject.cpp */; };
 		AF8D3896240B47140099F286 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3892240B47140099F286 /* main.cpp */; };
+		CDB9EA7F240B5CF4001BA2CA /* shader.vert in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388B240B47140099F286 /* shader.vert */; };
+		CDB9EA80240B5CF4001BA2CA /* shader.frag in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388E240B47140099F286 /* shader.frag */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		AF0E813323C99A2B0054F4D4 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 8;
 			dstPath = shaders;
 			dstSubfolderSpec = 16;
 			files = (
+				CDB9EA7F240B5CF4001BA2CA /* shader.vert in Copy Files */,
+				CDB9EA80240B5CF4001BA2CA /* shader.frag in Copy Files */,
 			);
 			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
