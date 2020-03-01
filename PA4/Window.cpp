@@ -9,21 +9,27 @@ namespace
     int width, height;
     std::string windowTitle("GLFW Starter Project");
     int state = 0;
-    glm::vec3 lastPoint;
+    bool click = false;
     
-    glm::vec2 lastXY;
+    // camera
+    glm::vec3 lastRot;
+    bool firstMouse = true;
+    float yaw   = -90.0f;    // yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+    float pitch =  0.0f;
+    float lastX =  800.0f / 2.0;
+    float lastY =  600.0 / 2.0;
+    float fov   =  45.0f;
     
-    double xpos, ypos;
-    glm::vec3 eye(0, 0, 20); // Camera position.
+    glm::vec3 cameraPos(0, 0, 20); // Camera position.
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //The front direction
     glm::vec3 center(0, 0, 0); // The point we are looking at.
-    glm::vec3 up(0, 1, 0); // The up direction of the camera.
+    glm::vec3 cameraUp(0, 1, 0); // The up direction of the camera.
     float fovy = 60;
     float near = 1;
     float far = 1000;
-    glm::mat4 view = glm::lookAt(eye, center, up); // View matrix, defined by eye, center and up.
+    glm::vec3 up(0.0, 1.0, 0.0); // The universal up direction of the camera.
+    glm::mat4 view = glm::lookAt(cameraPos, center, up); // View matrix, defined by eye, center and up.
     glm::mat4 projection; // Projection matrix.
-    
-    
     
     
     GLuint program; // The shader program id.
@@ -31,6 +37,11 @@ namespace
     GLuint viewLoc; // Location of view in shader.
     
     OBJObject* teapot;
+    
+    // timing
+    float deltaTime = 0.0f;    // time between current frame and last frame
+    float lastFrame = 0.0f;
+
     };
 
 bool Window::initializeProgram()
@@ -68,8 +79,6 @@ void Window::cleanUp()
     // Deallcoate the objects.
 
     glDeleteProgram(program);
-    
-    
     
 }
 
@@ -149,16 +158,21 @@ void Window::resizeCallback(GLFWwindow* window, int w, int h)
 void Window::idleCallback()
 {
     // Perform any updates as necessary.
-//    teapot->update();
 
 }
 
 void Window::displayCallback(GLFWwindow* window)
 {
-    
-    
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
+    // input
+    // -----
+    processInput(window);
     // Clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     glUseProgram(program);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
@@ -168,35 +182,68 @@ void Window::displayCallback(GLFWwindow* window)
     // set the function to acquire cursor position
     glfwSetCursorPosCallback(window, cursor_position_callback);
     
-    glfwGetCursorPos(window, &xpos, &ypos);
-    
-    glfwSetScrollCallback(window, scroll_callback);
-    
     // Gets events, including input such as keyboard and mouse or window resizing.
     glfwPollEvents();
     // Swap buffers.
     glfwSwapBuffers(window);
     
 }
-void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+void Window::processInput(GLFWwindow *window)
 {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 2.5 * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
+
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    glm::vec3 direction;
-    
-    float rot_angle;
-    glm::vec3 curPoint;
-//    glm::vec2 curXY;
-    if (state == ROTATE) {
-        curPoint = trackBallMapping(xpos, ypos);
-        direction = curPoint - lastPoint;
-        float velocity = glm::length(direction);
-        if (velocity > 0.0001) {
-            glm::vec3 rotAxis = glm::cross(lastPoint, curPoint);
-            rot_angle = velocity * 90.0f;
-            view = glm::rotate(glm::mat4(1.0f), glm::radians(rot_angle), rotAxis) * view;
-        }
-        lastPoint = curPoint;
+//    glm::vec3 direction;
+//
+//    float rot_angle;
+//    glm::vec3 curPoint;
+////    glm::vec2 curXY;
+//    if (state == ROTATE) {
+//        curPoint = trackBallMapping(xpos, ypos);
+//        direction = curPoint - lastPoint;
+//        float velocity = glm::length(direction);
+//        if (velocity > 0.0001) {
+//            glm::vec3 rotAxis = glm::cross(lastPoint, curPoint);
+//            rot_angle = velocity * 90.0f;
+//            view = glm::rotate(glm::mat4(1.0f), glm::radians(rot_angle), rotAxis) * view;
+//        }
+//        lastPoint = curPoint;
+//    }
+    if(click){
+        float xoffset = xpos - lastX;
+        float yoffset = lastY - ypos;
+        lastX = xpos;
+        lastY = ypos;
+
+        float sensitivity = 0.5;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        yaw   += xoffset;
+        pitch += yoffset;
+
+        if(pitch > 89.0f)
+        pitch = 89.0f;
+        if(pitch < -89.0f)
+        pitch = -89.0f;
+
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        direction.y = sin(glm::radians(pitch));
+        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cameraFront = glm::normalize(direction);
     }
 }
 
@@ -218,46 +265,34 @@ glm::vec3 Window::trackBallMapping(double xpos, double ypos) {
 }
 
 void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (action == GLFW_PRESS) {
-        switch (button) {
-            case GLFW_MOUSE_BUTTON_LEFT:
-                lastPoint = trackBallMapping(xpos, ypos);
-                state = ROTATE;
-                break;
-            case GLFW_MOUSE_BUTTON_RIGHT:
-                lastXY = glm::vec2(xpos, ypos);
-                state = TRANSLATE;
-                break;
+    //once we click the left button
+    double x_rot, y_rot;
+    switch (action){
+        case GLFW_PRESS:{
+            click = true;
+            glfwGetCursorPos(window, &x_rot, &y_rot);
+            lastX = x_rot;
+            lastY = y_rot;
+            lastRot = trackBallMapping(x_rot, y_rot);
+            break;
         }
+        case GLFW_RELEASE:{
+            click = false;
+            break;
+        }
+        default:
+            break;
     }
-    else if (action == GLFW_RELEASE) {
-        state = NONE;
-    }
-    
 }
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    
-    
     // Check for a key press.
     if (action == GLFW_PRESS)
     {
         switch (key)
         {
                 
-            case GLFW_KEY_W:
-                view = glm::translate(glm::mat4(1), glm::vec3(0,0,2))*view;
-                break;
-            case GLFW_KEY_S:
-                view = glm::translate(glm::mat4(1), glm::vec3(0,0,-2))*view;
-                break;
-            case GLFW_KEY_A:
-                view = glm::translate(glm::mat4(1), glm::vec3(2,0,0))*view;
-                break;
-            case GLFW_KEY_D:
-                view = glm::translate(glm::mat4(1), glm::vec3(-2,0,0))*view;
-                break;
             case GLFW_KEY_ESCAPE:
                 // Close the window. This causes the program to also terminate.
                 glfwSetWindowShouldClose(window, GL_TRUE);
@@ -276,7 +311,7 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 
             case GLFW_KEY_R:
             {
-                view = glm::lookAt(eye, center, up);
+                view = glm::lookAt(cameraPos, center, cameraUp);
                 break;
             }
             default:

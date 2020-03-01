@@ -1,0 +1,3 @@
+# ignore the proj execution file
+/PA4.xcodeproj
+/.DS_Store
