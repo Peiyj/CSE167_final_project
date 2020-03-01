@@ -1,3 +1,5 @@
 # ignore the proj execution file
 /PA4.xcodeproj
 /.DS_Store
+PA4/.DS_Store
+PA4.xcodeproj/project.xcworkspace/xcuserdata/kwkarlwang.xcuserdatad/UserInterfaceState.xcuserstate

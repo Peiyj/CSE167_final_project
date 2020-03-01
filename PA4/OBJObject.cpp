@@ -58,16 +58,14 @@ OBJObject::OBJObject(const char* obj, GLuint program)
         else if(c1 == 'f' && c2 == ' '){
 //            fscanf(fp, "%d//%d %d//%d %d//%d", &i1, &n1, &i2, &n2,
 //                   &i3, &n3);
-            fscanf(fp, "%d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d", &i1, &t1, &n1, &i2, &t2, &n2,
-                   &i3, &t3, &n3, &i4, &t4, &n4);
+            fscanf(fp, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &t1, &n1, &i2, &t2, &n2,
+                   &i3, &t3, &n3);
             vertices_idx.push_back(i1-1);
             vertices_idx.push_back(i2-1);
             vertices_idx.push_back(i3-1);
-//            vertices_idx.push_back(i4-1);
             normals_idx.push_back(n1-1);
             normals_idx.push_back(n2-1);
             normals_idx.push_back(n3-1);
-//            normals_idx.push_back(n4-1);
         }
         
     }
@@ -94,11 +92,10 @@ OBJObject::OBJObject(const char* obj, GLuint program)
     scalez = 2/(maxz-minz);
     
     float scale_factor = min(min(scalex, scaley), scalez);
-    scale_factor = 1;
+    scale_factor = 10;
     
 //    model = glm::mat4(1.0f);
     model = glm::scale(glm::mat4(1), glm::vec3(scale_factor))*glm::translate(glm::mat4(1.0f), -center)*glm::mat4(1.0f);
-    
     original_model = model;
     moved_model = glm::translate(glm::mat4(1), glm::vec3(0,0,0));
     scaled_model = glm::scale(glm::mat4(1), glm::vec3(1));
