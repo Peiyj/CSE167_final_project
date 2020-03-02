@@ -18,10 +18,8 @@
 #include <memory>
 
 #include "Object.h"
-
-
 #include "shader.h"
-
+#include "DirectionalLight.h"
 #include "OBJObject.hpp"
 
 

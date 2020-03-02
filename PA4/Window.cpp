@@ -13,12 +13,10 @@ namespace
     
     // camera
     glm::vec3 lastRot;
-    bool firstMouse = true;
     float yaw   = -90.0f;    // yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
     float pitch =  0.0f;
     float lastX =  800.0f / 2.0;
     float lastY =  600.0 / 2.0;
-    float fov   =  45.0f;
     
     glm::vec3 cameraPos(0, 0, 20); // Camera position.
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //The front direction
@@ -32,11 +30,18 @@ namespace
     glm::mat4 projection; // Projection matrix.
     
     
-    GLuint program; // The shader program id.
-    GLuint projectionLoc; // Location of projection in shader.
-    GLuint viewLoc; // Location of view in shader.
-    
+    GLuint normal_program; // The shader program id.
+    GLuint toon_program; // The shader program id.
+    GLuint n_projectionLoc; // Location of projection in shader.
+    GLuint n_viewLoc; // Location of view in shader.
+    GLuint toon_projectionLoc; // Location of projection in shader.
+    GLuint toon_viewLoc; // Location of view in shader.
+    GLuint dlightColor_loc; //location of the directional light color
+    GLuint dlightDirection_loc; //location of the directional light direction
+    GLuint cameraPos_loc; // camera location
+
     OBJObject* teapot;
+    DirectionalLight* dlight;
     
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
@@ -47,18 +52,32 @@ namespace
 bool Window::initializeProgram()
 {
     // Create a shader program with a vertex shader and a fragment shader.
-    program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
-    // This shader program is for displaying your rasterizer results
+    normal_program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
+    // Create a shader program with a vertex shader and a fragment shader.
+    toon_program = LoadShaders("shaders/LightShader.vert", "shaders/LightShader.frag");
 
     // Check the shader program.
-    if (!program)
+    if (!normal_program)
     {
-        std::cerr << "Failed to initialize shader program" << std::endl;
+        std::cerr << "Failed to initialize normal shader program" << std::endl;
+        return false;
+    }
+    
+    // Check the shader program.
+    if (!toon_program)
+    {
+        std::cerr << "Failed to initialize toon shader program" << std::endl;
         return false;
     }
 
-    projectionLoc = glGetUniformLocation(program, "projection");
-    viewLoc = glGetUniformLocation(program, "view");
+    n_projectionLoc = glGetUniformLocation(normal_program, "projection");
+    n_viewLoc = glGetUniformLocation(normal_program, "view");
+    
+    dlightColor_loc = glGetUniformLocation(toon_program, "dlightColor");
+    dlightDirection_loc = glGetUniformLocation(toon_program, "dlightDirection");
+    cameraPos_loc = glGetUniformLocation(toon_program, "cameraPos");
+    toon_projectionLoc = glGetUniformLocation(toon_program, "projection");
+    toon_viewLoc = glGetUniformLocation(toon_program, "view");
     return true;
 }
 
@@ -66,9 +85,10 @@ bool Window::initializeObjects()
 {
     
     // Create a point cloud consisting of cube vertices.
-
-    teapot = new OBJObject("./teapot.obj", program);
+    teapot = new OBJObject("./teapot.obj", toon_program);
     
+    // Create a directional light source
+    dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
 
 
     return true;
@@ -78,8 +98,8 @@ void Window::cleanUp()
 {
     // Deallcoate the objects.
 
-    glDeleteProgram(program);
-    
+    glDeleteProgram(normal_program);
+    glDeleteProgram(toon_program);
 }
 
 GLFWwindow* Window::createWindow(int width, int height)
@@ -173,9 +193,12 @@ void Window::displayCallback(GLFWwindow* window)
     // Clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    glUseProgram(program);
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUseProgram(toon_program);
+    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
+    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
     teapot->draw();
     // set the function for mouse click
     glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -205,22 +228,6 @@ void Window::processInput(GLFWwindow *window)
 }
 
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-//    glm::vec3 direction;
-//
-//    float rot_angle;
-//    glm::vec3 curPoint;
-////    glm::vec2 curXY;
-//    if (state == ROTATE) {
-//        curPoint = trackBallMapping(xpos, ypos);
-//        direction = curPoint - lastPoint;
-//        float velocity = glm::length(direction);
-//        if (velocity > 0.0001) {
-//            glm::vec3 rotAxis = glm::cross(lastPoint, curPoint);
-//            rot_angle = velocity * 90.0f;
-//            view = glm::rotate(glm::mat4(1.0f), glm::radians(rot_angle), rotAxis) * view;
-//        }
-//        lastPoint = curPoint;
-//    }
     if(click){
         float xoffset = xpos - lastX;
         float yoffset = lastY - ypos;
@@ -246,7 +253,6 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
         cameraFront = glm::normalize(direction);
     }
 }
-
 
 glm::vec3 Window::trackBallMapping(double xpos, double ypos) {
     glm::vec3 v;

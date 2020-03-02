@@ -26,7 +26,5 @@ void main()
     // tells the shader where the vertices should be rendered
     gl_Position = projection * view * model * vec4(position, 1.0);
     normal_vector = normal;
-
-
 }
 
