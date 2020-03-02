@@ -16,12 +16,20 @@ OBJObject::OBJObject(const char* obj, GLuint program)
     
     vector<glm::vec3> vertices;
     vector<glm::vec3> normals;
+    vector<glm::vec2> textures;
+    
     vector<unsigned int> vertices_idx;
     vector<unsigned int> normals_idx;
+    vector<unsigned int> textures_idx;
+    
     float x,y,z;
     float r,g,b;
     int c1, c2;
     int i1, n1, i2, n2, i3, n3, t1, t2, t3, i4, n4, t4;
+    // calculate tangent/bitangent vectors of both triangles
+    glm::vec3 tangent1, bitangent1;
+    glm::vec3 tangent2, bitangent2;
+    
     float minx, miny, minz;
     float maxx, maxy, maxz;
     minx = miny = minz = FLT_MAX;
@@ -51,6 +59,10 @@ OBJObject::OBJObject(const char* obj, GLuint program)
             maxz = max(z, maxz);
             vertices.push_back(glm::vec3(x,y,z));
         }
+//        else if(c1 == 'v' && c2 == 't'){
+//            fscanf(fp, "%f %f", &x, &y);
+//            textures.push_back(glm::vec2(x,y));
+//        }
         else if(c1 == 'v' && c2 == 'n'){
             fscanf(fp, "%f %f %f", &x, &y, &z);
             normals.push_back(glm::vec3(x,y,z));
@@ -66,6 +78,9 @@ OBJObject::OBJObject(const char* obj, GLuint program)
             normals_idx.push_back(n1-1);
             normals_idx.push_back(n2-1);
             normals_idx.push_back(n3-1);
+//            textures_idx.push_back(t1-1);
+//            textures_idx.push_back(t2-1);
+//            textures_idx.push_back(t3-1);
         }
         
     }
@@ -74,13 +89,17 @@ OBJObject::OBJObject(const char* obj, GLuint program)
     for(int i = 0; i < vertices_idx.size(); i++){
         this->vertices.push_back(vertices[vertices_idx[i]]);
         this->normals.push_back(normals[normals_idx[i]]);
+//        this->textures.push_back(textures[textures_idx[i]]);
         indices.push_back(i);
     }
+    
     /*
-     * TODO: Section 4, you will need to normalize the object to fit in the
-     * screen.
+     * Get the tangent/bitangent
      */
     
+    /*
+     * Normalize the object to fit in the screen.
+     */
     float midx, midy, midz;
     float scalex, scaley, scalez;
     midx = minx + (maxx-minx)/2;
@@ -94,7 +113,6 @@ OBJObject::OBJObject(const char* obj, GLuint program)
     float scale_factor = min(min(scalex, scaley), scalez);
     scale_factor = 10;
     
-//    model = glm::mat4(1.0f);
     model = glm::scale(glm::mat4(1), glm::vec3(scale_factor))*glm::translate(glm::mat4(1.0f), -center)*glm::mat4(1.0f);
     original_model = model;
     moved_model = glm::translate(glm::mat4(1), glm::vec3(0,0,0));
