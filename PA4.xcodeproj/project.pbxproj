@@ -13,6 +13,7 @@
 		AF8D3894240B47140099F286 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3888240B47140099F286 /* shader.cpp */; };
 		AF8D3895240B47140099F286 /* OBJObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3889240B47140099F286 /* OBJObject.cpp */; };
 		AF8D3896240B47140099F286 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF8D3892240B47140099F286 /* main.cpp */; };
+		AFF5BE68240C757200BCDC92 /* Terrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFF5BE66240C757200BCDC92 /* Terrain.cpp */; };
 		CDB9EA7F240B5CF4001BA2CA /* shader.vert in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388B240B47140099F286 /* shader.vert */; };
 		CDB9EA80240B5CF4001BA2CA /* shader.frag in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388E240B47140099F286 /* shader.frag */; };
 /* End PBXBuildFile section */
@@ -51,6 +52,11 @@
 		AF8D3890240B47140099F286 /* textureShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = textureShader.vert; sourceTree = "<group>"; };
 		AF8D3891240B47140099F286 /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
 		AF8D3892240B47140099F286 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		AFF5BE66240C757200BCDC92 /* Terrain.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Terrain.cpp; sourceTree = "<group>"; };
+		AFF5BE67240C757200BCDC92 /* Terrain.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Terrain.hpp; sourceTree = "<group>"; };
+		AFF5BE69240C8C8300BCDC92 /* stb_image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
+		AFF5BE6A240C908E00BCDC92 /* TerrainShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = TerrainShader.vert; sourceTree = "<group>"; };
+		AFF5BE6B240C908E00BCDC92 /* TerrainShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = TerrainShader.frag; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +111,9 @@
 				AF8D388A240B47140099F286 /* shaders */,
 				AF8D3891240B47140099F286 /* Object.h */,
 				AF8D3892240B47140099F286 /* main.cpp */,
+				AFF5BE66240C757200BCDC92 /* Terrain.cpp */,
+				AFF5BE67240C757200BCDC92 /* Terrain.hpp */,
+				AFF5BE69240C8C8300BCDC92 /* stb_image.h */,
 			);
 			path = PA4;
 			sourceTree = "<group>";
@@ -112,6 +121,8 @@
 		AF8D388A240B47140099F286 /* shaders */ = {
 			isa = PBXGroup;
 			children = (
+				AFF5BE6B240C908E00BCDC92 /* TerrainShader.frag */,
+				AFF5BE6A240C908E00BCDC92 /* TerrainShader.vert */,
 				AF8D388B240B47140099F286 /* shader.vert */,
 				AF8D388C240B47140099F286 /* textureShader.frag */,
 				AF8D388D240B47140099F286 /* LightShader.frag */,
@@ -179,6 +190,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF8D3895240B47140099F286 /* OBJObject.cpp in Sources */,
+				AFF5BE68240C757200BCDC92 /* Terrain.cpp in Sources */,
 				AF8D3894240B47140099F286 /* shader.cpp in Sources */,
 				AF8D3896240B47140099F286 /* main.cpp in Sources */,
 				AF8D3893240B47140099F286 /* Window.cpp in Sources */,
