@@ -36,8 +36,17 @@ namespace
     GLuint projectionLoc; // Location of projection in shader.
     GLuint viewLoc; // Location of view in shader.
     
-    OBJObject* teapot;
     
+    GLuint terrainProgram;
+    GLuint terrainProjectionLoc;
+    GLuint terrainViewLoc;
+    
+    
+    
+    
+    OBJObject* teapot;
+    Terrain* terrain;
+
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
     float lastFrame = 0.0f;
@@ -48,17 +57,20 @@ bool Window::initializeProgram()
 {
     // Create a shader program with a vertex shader and a fragment shader.
     program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
-    // This shader program is for displaying your rasterizer results
-
+    projectionLoc = glGetUniformLocation(program, "projection");
+    viewLoc = glGetUniformLocation(program, "view");
     // Check the shader program.
     if (!program)
     {
         std::cerr << "Failed to initialize shader program" << std::endl;
         return false;
     }
+    
+    terrainProgram = LoadShaders("shaders/TerrainShader.vert", "shaders/TerrainShader.frag");
+    terrainProjectionLoc = glGetUniformLocation(terrainProgram, "projection");
+    terrainViewLoc = glGetUniformLocation(terrainProgram, "view");
 
-    projectionLoc = glGetUniformLocation(program, "projection");
-    viewLoc = glGetUniformLocation(program, "view");
+
     return true;
 }
 
@@ -68,7 +80,8 @@ bool Window::initializeObjects()
     // Create a point cloud consisting of cube vertices.
 
     teapot = new OBJObject("./teapot.obj", program);
-    
+    terrain = new Terrain(terrainProgram, 0, 0);
+
 
 
     return true;
@@ -176,7 +189,13 @@ void Window::displayCallback(GLFWwindow* window)
     glUseProgram(program);
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    teapot->draw();
+//    teapot->draw();
+    
+    
+    glUseProgram(terrainProgram);
+    glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    terrain->draw();
     // set the function for mouse click
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     // set the function to acquire cursor position
