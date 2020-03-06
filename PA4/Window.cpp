@@ -4,6 +4,7 @@
  * Declare your variables below. Unnamed namespace is used here to avoid
  * declaring global or static variables.
  */
+using namespace std;
 namespace
     {
     int width, height;
@@ -52,8 +53,20 @@ namespace
     GLuint terrainProgram;
     GLuint terrainProjectionLoc;
     GLuint terrainViewLoc;
-
+    
+    Water* water;
+    GLuint waterPorgram;
+    GLuint waterProjectionLoc;
+    GLuint waterViewLoc;
+    
+    
+    
+    
+    WaterFrameBuffer* waterFrameBuffer;
+    
+    
     Terrain* terrain;
+    Terrain* terrain_ds;
 
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
@@ -64,8 +77,8 @@ namespace
 bool Window::initializeProgram()
 {
     // Create a shader program with a vertex shader and a fragment shader.
-    program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
-    // Create a normal ordinary program with basic shader files
+    projectionLoc = glGetUniformLocation(program, "projection");
+    viewLoc = glGetUniformLocation(program, "view");
     normal_program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
     // Create a shader program with a vertex shader and a fragment shader.
     toon_program = LoadShaders("shaders/LightShader.vert", "shaders/LightShader.frag");
@@ -91,6 +104,11 @@ bool Window::initializeProgram()
     terrainProgram = LoadShaders("shaders/TerrainShader.vert", "shaders/TerrainShader.frag");
     terrainProjectionLoc = glGetUniformLocation(terrainProgram, "projection");
     terrainViewLoc = glGetUniformLocation(terrainProgram, "view");
+    
+    waterPorgram = LoadShaders("shaders/WaterShader.vert", "shaders/WaterShader.frag");
+    waterProjectionLoc = glGetUniformLocation(waterPorgram, "projection");
+    waterViewLoc = glGetUniformLocation(waterPorgram, "view");
+    
 
     n_projectionLoc = glGetUniformLocation(normal_program, "projection");
     n_viewLoc = glGetUniformLocation(normal_program, "view");
@@ -110,13 +128,23 @@ bool Window::initializeObjects()
 {
     
     // Create a point cloud consisting of cube vertices.
-    terrain = new Terrain(terrainProgram, 0, 0);
+//    terrain = new Terrain(terrainProgram, 1, 0, false);
+    terrain_ds = new Terrain(terrainProgram, 0, 0, true);
 
     teapot = new OBJObject("./teapot.obj", depth_program);
     
     // Create a directional light source
     dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
 
+    
+    
+    water = new Water(waterPorgram, terrain_ds->getSize(),terrain_ds->getMiny(),
+                      terrain_ds->getMaxy(), terrain_ds->getModel());
+    
+    waterFrameBuffer = new WaterFrameBuffer(width, height);
+    
+    
+    
 
     return true;
 }
@@ -129,7 +157,7 @@ void Window::cleanUp()
     glDeleteProgram(toon_program);
 }
 
-GLFWwindow* Window::createWindow(int width, int height)
+GLFWwindow* Window::createWindow(int w, int h)
 {
     // Initialize GLFW.
     if (!glfwInit())
@@ -154,8 +182,8 @@ GLFWwindow* Window::createWindow(int width, int height)
 #endif
     
     // Create the GLFW window.
-    GLFWwindow* window = glfwCreateWindow(width, height, windowTitle.c_str(), NULL, NULL);
-    
+    GLFWwindow* window = glfwCreateWindow(w, h, windowTitle.c_str(), NULL, NULL);
+//    glfwGetFramebufferSize(window, &width, &height);
     // Check if the window could not be created.
     if (!window)
     {
@@ -232,18 +260,43 @@ void Window::displayCallback(GLFWwindow* window)
 //    teapot->draw();
     // bind to screen framebuffer
     // Clear the color and depth buffers.
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+
+    waterFrameBuffer->bindReflectionFrameBuffer();
+
+    glUseProgram(toon_program);
+    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
+    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
+    teapot->draw();
+    waterFrameBuffer->unbindFrameBuffer();
+
+
+
+
+    water->setTexID(waterFrameBuffer->getReflectionTexture());
+    glUseProgram(waterPorgram);
+    glUniformMatrix4fv(waterProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(waterViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    water->draw();
+    
+
     glUseProgram(terrainProgram);
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    terrain->draw();
-//    glUseProgram(toon_program);
-//    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-//    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-//    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
-//    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
-//    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
-//    teapot->draw();
+    //    terrain->draw();
+    terrain_ds->draw();
+    
+    
+//    cout<< "snowid " << terrain_ds->snowID <<endl;
+//    cout<< "texture " << water->texture <<endl;
+    
+    
+    
     // set the function for mouse click
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     // set the function to acquire cursor position
