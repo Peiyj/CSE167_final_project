@@ -59,8 +59,7 @@ namespace
     GLuint waterProjectionLoc;
     GLuint waterViewLoc;
     
-    
-    
+    ShadowFrameBuffer* shadowFrameBuffer;
     
     WaterFrameBuffer* waterFrameBuffer;
     
@@ -137,13 +136,12 @@ bool Window::initializeObjects()
     dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
 
     
-    
     water = new Water(waterPorgram, terrain_ds->getSize(),terrain_ds->getMiny(),
                       terrain_ds->getMaxy(), terrain_ds->getModel());
     
     waterFrameBuffer = new WaterFrameBuffer(width, height);
     
-    
+    shadowFrameBuffer = new ShadowFrameBuffer(width, height);
     
 
     return true;
@@ -236,6 +234,7 @@ void Window::idleCallback()
 
 void Window::displayCallback(GLFWwindow* window)
 {
+    
     // location of the light
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
@@ -248,18 +247,6 @@ void Window::displayCallback(GLFWwindow* window)
     // -----
     processInput(window);
     
-//    // first pass: render depth of scene to texture (from light's perspective)
-//    // Clear the color and depth buffers.
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//    glUseProgram(depth_program);
-//    float near_plane = 1.0f, far_plane = 7.5f;
-//    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-//    lightView = glm::lookAt(dlight->direction, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-//    lightSpaceMatrix = lightProjection * lightView;
-//    glUniformMatrix4fv(depth_lightLoc, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
-//    teapot->draw();
-    // bind to screen framebuffer
-    // Clear the color and depth buffers.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 

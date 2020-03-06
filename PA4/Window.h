@@ -24,7 +24,7 @@
 #include "Terrain.hpp"
 #include "Water.hpp"
 #include "WaterFrameBuffer.hpp"
-
+#include "ShadowFrameBuffer.hpp"
 
 
 

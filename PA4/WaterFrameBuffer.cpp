@@ -9,10 +9,7 @@
 WaterFrameBuffer::WaterFrameBuffer(int width, int height){
     original_width = width;
     original_height = height;
-    
-    
-    
-    
+  
     // create a frame buffer for reflection
     glGenFramebuffers(1, &reflectionFrameBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, reflectionFrameBuffer);
