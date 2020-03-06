@@ -8,7 +8,6 @@ namespace
     {
     int width, height;
     std::string windowTitle("GLFW Starter Project");
-    int state = 0;
     bool click = false;
     
     // camera
@@ -36,6 +35,9 @@ namespace
     
     GLuint normal_program; // The shader program id.
     GLuint toon_program; // The shader program id.
+    GLuint depth_program; //The depthMap program id.
+    GLuint depth_lightLoc; //The light matrix loc of the depthMap
+    GLuint depth_modelLoc; //The model matrix loc of the depthMap
     GLuint n_projectionLoc; // Location of projection in shader.
     GLuint n_viewLoc; // Location of view in shader.
     GLuint toon_projectionLoc; // Location of projection in shader.
@@ -50,10 +52,7 @@ namespace
     GLuint terrainProgram;
     GLuint terrainProjectionLoc;
     GLuint terrainViewLoc;
-    
-    
-    
-    
+
     Terrain* terrain;
 
     // timing
@@ -66,12 +65,15 @@ bool Window::initializeProgram()
 {
     // Create a shader program with a vertex shader and a fragment shader.
     program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
-    projectionLoc = glGetUniformLocation(program, "projection");
-    viewLoc = glGetUniformLocation(program, "view");
+    // Create a normal ordinary program with basic shader files
     normal_program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
     // Create a shader program with a vertex shader and a fragment shader.
     toon_program = LoadShaders("shaders/LightShader.vert", "shaders/LightShader.frag");
-
+    // Create a shader program that tests the depth of the object (first pass of shadow mapping)
+    depth_program = LoadShaders("shaders/depthMap.vert", "shaders/depthMap.frag");
+    // location of projection and view
+    projectionLoc = glGetUniformLocation(program, "projection");
+    viewLoc = glGetUniformLocation(program, "view");
     // Check the shader program.
     if (!normal_program)
     {
@@ -90,7 +92,6 @@ bool Window::initializeProgram()
     terrainProjectionLoc = glGetUniformLocation(terrainProgram, "projection");
     terrainViewLoc = glGetUniformLocation(terrainProgram, "view");
 
-
     n_projectionLoc = glGetUniformLocation(normal_program, "projection");
     n_viewLoc = glGetUniformLocation(normal_program, "view");
     
@@ -99,6 +100,9 @@ bool Window::initializeProgram()
     cameraPos_loc = glGetUniformLocation(toon_program, "cameraPos");
     toon_projectionLoc = glGetUniformLocation(toon_program, "projection");
     toon_viewLoc = glGetUniformLocation(toon_program, "view");
+    
+    depth_lightLoc = glGetUniformLocation(depth_program, "lightSpaceMatrix");
+    depth_modelLoc = glGetUniformLocation(depth_program, "model");
     return true;
 }
 
@@ -108,7 +112,7 @@ bool Window::initializeObjects()
     // Create a point cloud consisting of cube vertices.
     terrain = new Terrain(terrainProgram, 0, 0);
 
-    teapot = new OBJObject("./teapot.obj", toon_program);
+    teapot = new OBJObject("./teapot.obj", depth_program);
     
     // Create a directional light source
     dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
@@ -189,8 +193,6 @@ void Window::resizeCallback(GLFWwindow* window, int w, int h)
     // In case your Mac has a retina display.
     glfwGetFramebufferSize(window, &width, &height);
 #endif
-    //    width = w;
-    //    height = h;
     // Set the viewport size.
     glViewport(0, 0, width, height);
     // Set the projection matrix.
@@ -206,28 +208,42 @@ void Window::idleCallback()
 
 void Window::displayCallback(GLFWwindow* window)
 {
+    // location of the light
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+    
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     // input
     // -----
     processInput(window);
+    
+//    // first pass: render depth of scene to texture (from light's perspective)
+//    // Clear the color and depth buffers.
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//    glUseProgram(depth_program);
+//    float near_plane = 1.0f, far_plane = 7.5f;
+//    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+//    lightView = glm::lookAt(dlight->direction, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+//    lightSpaceMatrix = lightProjection * lightView;
+//    glUniformMatrix4fv(depth_lightLoc, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+//    teapot->draw();
+    // bind to screen framebuffer
     // Clear the color and depth buffers.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
+    glClear(GL_DEPTH_BUFFER_BIT);
     glUseProgram(terrainProgram);
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     terrain->draw();
-    glUseProgram(toon_program);
-    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
-    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
-    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
-    teapot->draw();
+//    glUseProgram(toon_program);
+//    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+//    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+//    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
+//    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
+//    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
+//    teapot->draw();
     // set the function for mouse click
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     // set the function to acquire cursor position
@@ -352,4 +368,10 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 break;
         }
     }
+}
+
+void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
 }

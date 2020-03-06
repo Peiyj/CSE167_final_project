@@ -156,13 +156,13 @@ OBJObject::OBJObject(const char* obj, GLuint program)
                  this->normals.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
-    //    // Unbind from the VBO.
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    //    // Unbind from the VAO.
     glBindVertexArray(0);
     
     modelLoc = glGetUniformLocation(program, "model");
     colorLoc = glGetUniformLocation(program, "color");
+    // shadow mapping
+    //create frame buffer to render depth map
 }
 
 OBJObject::~OBJObject()
@@ -184,10 +184,7 @@ void OBJObject::draw()
 
     // Bind to the VAO.
     glBindVertexArray(vao);
-    // VAO knows to use EBO, which is the last slot in VAO
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-//    glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, 0);
-    // Unbind from the VAO.
     glBindVertexArray(0);
 }
 

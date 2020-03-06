@@ -14,6 +14,8 @@ void setupCallbacks(GLFWwindow* window)
 	glfwSetKeyCallback(window, Window::keyCallback);
 	// Set the window resize callback.
 	glfwSetWindowSizeCallback(window, Window::resizeCallback);
+    // Set the frame buffer size callback.
+    glfwSetFramebufferSizeCallback(window, Window::framebuffer_size_callback);
     Window::processInput(window);
 }
 

@@ -21,6 +21,8 @@
 		CDB9EA8A240C7E3B001BA2CA /* LightShader.vert in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388F240B47140099F286 /* LightShader.vert */; };
 		CDB9EA8B240C7E3B001BA2CA /* textureShader.frag in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D388C240B47140099F286 /* textureShader.frag */; };
 		CDB9EA8C240C7E3B001BA2CA /* textureShader.vert in Copy Files */ = {isa = PBXBuildFile; fileRef = AF8D3890240B47140099F286 /* textureShader.vert */; };
+		CDB9EA90240D8567001BA2CA /* depthMap.frag in Sources */ = {isa = PBXBuildFile; fileRef = CDB9EA8F240D8567001BA2CA /* depthMap.frag */; };
+		CDB9EA92240D8580001BA2CA /* depthMap.vert in Sources */ = {isa = PBXBuildFile; fileRef = CDB9EA91240D8580001BA2CA /* depthMap.vert */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -69,6 +71,8 @@
 		CDB9EA85240C7096001BA2CA /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		CDB9EA86240C77EC001BA2CA /* DirectionalLight.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionalLight.cpp; sourceTree = "<group>"; };
 		CDB9EA87240C77EC001BA2CA /* DirectionalLight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DirectionalLight.h; sourceTree = "<group>"; };
+		CDB9EA8F240D8567001BA2CA /* depthMap.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = depthMap.frag; sourceTree = "<group>"; };
+		CDB9EA91240D8580001BA2CA /* depthMap.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = depthMap.vert; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,7 +118,6 @@
 			isa = PBXGroup;
 			children = (
 				CDB9EA85240C7096001BA2CA /* teapot.obj */,
-				AF8D3883240B47140099F286 /* main.h */,
 				AF8D3884240B47140099F286 /* shader.h */,
 				AF8D3885240B47140099F286 /* Window.cpp */,
 				AF8D3886240B47140099F286 /* Window.h */,
@@ -123,6 +126,7 @@
 				AF8D3889240B47140099F286 /* OBJObject.cpp */,
 				AF8D388A240B47140099F286 /* shaders */,
 				AF8D3891240B47140099F286 /* Object.h */,
+				AF8D3883240B47140099F286 /* main.h */,
 				AF8D3892240B47140099F286 /* main.cpp */,
 				AFF5BE66240C757200BCDC92 /* Terrain.cpp */,
 				AFF5BE67240C757200BCDC92 /* Terrain.hpp */,
@@ -144,6 +148,8 @@
 				AF8D388F240B47140099F286 /* LightShader.vert */,
 				AF8D388C240B47140099F286 /* textureShader.frag */,
 				AF8D3890240B47140099F286 /* textureShader.vert */,
+				CDB9EA8F240D8567001BA2CA /* depthMap.frag */,
+				CDB9EA91240D8580001BA2CA /* depthMap.vert */,
 			);
 			path = shaders;
 			sourceTree = "<group>";
@@ -205,6 +211,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AF8D3895240B47140099F286 /* OBJObject.cpp in Sources */,
+				CDB9EA92240D8580001BA2CA /* depthMap.vert in Sources */,
+				CDB9EA90240D8567001BA2CA /* depthMap.frag in Sources */,
 				AFF5BE68240C757200BCDC92 /* Terrain.cpp in Sources */,
 				AF8D3894240B47140099F286 /* shader.cpp in Sources */,
 				AF8D3896240B47140099F286 /* main.cpp in Sources */,
