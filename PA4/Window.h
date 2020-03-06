@@ -23,6 +23,8 @@
 #include "OBJObject.hpp"
 
 #include "Terrain.hpp"
+#include "Water.hpp"
+#include "WaterFrameBuffer.hpp"
 
 
 
