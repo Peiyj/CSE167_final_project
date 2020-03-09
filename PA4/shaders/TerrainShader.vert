@@ -24,6 +24,9 @@ out vec3 normal_vector;
 out vec2 TexCoord;
 out float percentile;
 
+
+uniform vec4 plane;
+
 float calcPercentile(float y){
     return (y-miny)/(maxy-miny);
 }
@@ -31,6 +34,9 @@ void main()
 {
     // OpenGL maintains the D matrix so you only need to multiply by P, V (aka C inverse), and M
     // tells the shader where the vertices should be rendered
+    gl_ClipDistance[0] = dot(model*vec4(position, 1.0), plane);
+//    gl_ClipDistance[0] = dot(model*vec4(position, 1.0), vec4(0, 1, 0, 10));
+//    gl_ClipDistance[0] = -1;
     gl_Position = projection * view * model * vec4(position, 1.0);
 //    normal_vector = normal;
     TexCoord = aTexCoord*5;

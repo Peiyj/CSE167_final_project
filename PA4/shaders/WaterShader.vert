@@ -6,26 +6,33 @@
 
 layout (location = 0) in vec3 position;
 //layout (location = 1) in vec3 normal;
-layout (location = 2) in vec2 aTexCoord;
 
 // Uniform variables can be updated by fetching their location and passing values to that location
 
 uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
+uniform vec3 cameraPos;
 
-out vec2 TexCoord;
+
+out vec4 clipSpace;
+out vec2 texCoord;
+out vec3 toCameraVector;
+
 // Outputs of the vertex shader are the inputs of the same name of the fragment shader.
 // The default output, gl_Position, should be assigned something. You can define as many
 // extra outputs as you need.
-
+const float tiling=6.0;
 void main()
 {
     // OpenGL maintains the D matrix so you only need to multiply by P, V (aka C inverse), and M
     // tells the shader where the vertices should be rendered
-    gl_Position = projection * view * model * vec4(position, 1.0);
-    TexCoord = aTexCoord;
-    
+    vec4 worldPosition = model * vec4(position, 1.0);
+    clipSpace = projection * view * worldPosition;
+    gl_Position = clipSpace;
+    texCoord = vec2(position.x/2.0 + 0.5, position.y/2.0 + 0.5)*tiling;
+    toCameraVector = cameraPos - worldPosition.xyz;
+
 
 
 }

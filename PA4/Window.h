@@ -25,6 +25,7 @@
 #include "Terrain.hpp"
 #include "Water.hpp"
 #include "WaterFrameBuffer.hpp"
+#include "Cube.h"
 
 
 
@@ -57,6 +58,7 @@ public:
 	static glm::vec3 trackBallMapping(double xpos, double ypos);
 //	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void processInput(GLFWwindow *window);
+    static glm::mat4 getViewMatrix();
 };
 
 #endif

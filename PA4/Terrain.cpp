@@ -146,13 +146,7 @@ void Terrain::generateTerrain(float** height_map, bool diamondSquare){
     //pass in miny, maxy
 
     
-    cout<<miny<<endl;
-    cout<<maxy<<endl;
-    
-    
-    
-    
-    
+
     glUseProgram(program);
 
     glUniform1f(glGetUniformLocation(program, "maxy"), maxy);
@@ -231,6 +225,10 @@ void Terrain::generateTerrain(float** height_map, bool diamondSquare){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
 }
 unsigned char* Terrain::heightmap(){
     int width, height, nrChannels;

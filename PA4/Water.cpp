@@ -13,9 +13,10 @@ Water::Water(GLuint program, int size, float miny, float maxy,
              glm::mat4 model){
     this->program = program;
     this->model = model;
+    moveFactor = 0;
     //set percentile 0.2 as the water
-    float y = 0.2*(maxy-miny)+miny;
-    int VERTEX_COUNT = 10;
+    y = 0.2*(maxy-miny)+miny;
+    int VERTEX_COUNT = 2;
     for(int i = 0; i < VERTEX_COUNT; i++){
         for(int j = 0; j < VERTEX_COUNT; j++){
             float x = j/((float)VERTEX_COUNT - 1) * size;
@@ -96,16 +97,18 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     
     
     glBindTexture(GL_TEXTURE_2D, 0);
-    glGenBuffers(1, &texture);
-    
-    glUseProgram(program);
-    glUniform1i(glGetUniformLocation(program, "tex"), 4);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glUseProgram(program);
+    glUniform1i(glGetUniformLocation(program, "reflectionTex"), 3);
+    glUniform1i(glGetUniformLocation(program, "refractionTex"), 4);
+    glUniform1i(glGetUniformLocation(program, "dudvTex"), 5);
     
-    glBindBuffer(GL_TEXTURE_2D, texture);
+    
+    glBindTexture(GL_TEXTURE_2D, dudvTex);
+
+    glBindBuffer(GL_TEXTURE_2D, dudvTex);
     int width, height, nrChannels;
-    unsigned char *data  =stbi_load("./test.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data  =stbi_load("./waterDUDV.png", &width, &height, &nrChannels, 0);
     //    unsigned char *data = 0;
     if (data){
         glTexImage2D(GL_TEXTURE_2D, 0 ,GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -115,21 +118,28 @@ Water::Water(GLuint program, int size, float miny, float maxy,
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    
+    glBindBuffer(GL_TEXTURE_2D, 0);
+
+//
+    y = (model*glm::vec4(0,y,0,1)).y;
 }
 void Water::draw(){
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, reflectTex);
     glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, refractTex);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, dudvTex);
 
 //    glm::vec3 color = glm::vec3(0, 0.4, 0.8);
 //    glm::vec3 color = glm::vec3(1);
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 //    glUniform3fv(glGetUniformLocation(program, "color"), 1, glm::value_ptr(color));
+    glUniform1f(glGetUniformLocation(program, "moveFactor"), moveFactor);
     
     // Bind to the VAO.
     glBindVertexArray(vao);
@@ -141,7 +151,18 @@ void Water::draw(){
     
 }
 
-void Water::setTexID(GLuint texture){
-//    this->texture = texture;
-//    return;
+void Water::setTexID(GLuint reflectTex, GLuint refractTex){
+    this->reflectTex = reflectTex;
+    this->refractTex = refractTex;
+}
+void Water::moveWater(float y){
+    model = glm::translate(glm::mat4(1), glm::vec3(0,y,0)) * model;
+    this->y+=y;
+}
+float Water::getHeight(){
+    return y;
+}
+void Water::update(){
+    moveFactor += 0.0003;
+    moveFactor = fmod(moveFactor, 1.0f);
 }

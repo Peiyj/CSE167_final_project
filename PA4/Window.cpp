@@ -25,7 +25,7 @@ namespace
     glm::vec3 cameraUp(0, 1, 0); // The up direction of the camera.
     float fovy = 60;
     float near = 1;
-    float far = 1000;
+    float far = 5000;
     glm::vec3 up(0.0, 1.0, 0.0); // The universal up direction of the camera.
     glm::mat4 view = glm::lookAt(cameraPos, center, up); // View matrix, defined by eye, center and up.
     glm::mat4 projection; // Projection matrix.
@@ -56,6 +56,12 @@ namespace
     GLuint waterPorgram;
     GLuint waterProjectionLoc;
     GLuint waterViewLoc;
+    
+    
+    
+    GLuint skyboxProgram;
+    Cube* skybox;
+    
     
     
     
@@ -112,28 +118,40 @@ bool Window::initializeProgram()
     cameraPos_loc = glGetUniformLocation(toon_program, "cameraPos");
     toon_projectionLoc = glGetUniformLocation(toon_program, "projection");
     toon_viewLoc = glGetUniformLocation(toon_program, "view");
+    
+    
+    
+    
+    
+    
+    skyboxProgram = LoadShaders("shaders/SkyboxShader.vert", "shaders/SkyboxShader.frag");
+    
     return true;
 }
 
 bool Window::initializeObjects()
 {
-    
+
     // Create a point cloud consisting of cube vertices.
 //    terrain = new Terrain(terrainProgram, 1, 0, false);
-    terrain_ds = new Terrain(terrainProgram, 0, 0, true);
 
     teapot = new OBJObject("./teapot.obj", toon_program);
     
     // Create a directional light source
     dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
-
+    
+    terrain_ds = new Terrain(terrainProgram, 0, 0, true);
     
     
     water = new Water(waterPorgram, terrain_ds->getSize(),terrain_ds->getMiny(),
                       terrain_ds->getMaxy(), terrain_ds->getModel());
     
     waterFrameBuffer = new WaterFrameBuffer(width, height);
+    water->setTexID(waterFrameBuffer->getReflectionTexture(), waterFrameBuffer->getRefractionTexture());
+
     
+    skybox = new Cube(4096, skyboxProgram);
+
     
     
 
@@ -146,6 +164,10 @@ void Window::cleanUp()
 
     glDeleteProgram(normal_program);
     glDeleteProgram(toon_program);
+    glDeleteProgram(program);
+    glDeleteProgram(waterPorgram);
+    glDeleteProgram(terrainProgram);
+    glDeleteProgram(skyboxProgram);
 }
 
 GLFWwindow* Window::createWindow(int w, int h)
@@ -225,6 +247,8 @@ void Window::idleCallback()
 {
     // Perform any updates as necessary.
 
+    waterFrameBuffer->setWidthHeight(width, height);
+    water->update();
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -236,42 +260,129 @@ void Window::displayCallback(GLFWwindow* window)
     // input
     // -----
     processInput(window);
+    
+    
+    
+    
+    
+    
     // Clear the color and depth buffers.
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-
+    glEnable(GL_CLIP_DISTANCE0);
+    
+    
+    
+    
+    // first redner to reflection FBO
     waterFrameBuffer->bindReflectionFrameBuffer();
+    // move the camera below the water
+    float distance = 2*(cameraPos.y-water->getHeight());
+    cameraPos.y -= distance;
+    pitch = -pitch;
+    glm::mat4 reflectView = getViewMatrix();
+    
+    
+    
+    // clear the color bit
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    // create the reflection plane
+    glm::vec4 reflectionPlane = glm::vec4(0, 1, 0, -water->getHeight());
+    // render the scene
+    glUseProgram(terrainProgram);
+    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(reflectionPlane));
+    glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(reflectView));
+    glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+//        terrain->draw();
+    terrain_ds->draw();
+    
+    
+    
+    waterFrameBuffer->unbindFrameBuffer();
 
+    
+    cameraPos.y +=distance;
+    pitch = -pitch;
+    
+    
+    
+    
+    
+    
+
+    
+    // render again in the refraction fbo
+    waterFrameBuffer->bindRefractionFrameBuffer();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//
+    glm::vec4 refractionPlane = glm::vec4(0, -1, 0, water->getHeight());
+    glUseProgram(terrainProgram);
+    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(refractionPlane));
+    glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    //        terrain->draw();
+    terrain_ds->draw();
+    waterFrameBuffer->unbindFrameBuffer();
+    
+    
+    
+    
+    
+    //render the scene normally
+    
+    glDisable(GL_CLIP_DISTANCE0);
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    glUseProgram(terrainProgram);
+//    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(reflectionPlane));
+    glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    //        terrain->draw();
+    terrain_ds->draw();
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     glUseProgram(toon_program);
     glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
     glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
     glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
-    teapot->draw();
-    waterFrameBuffer->unbindFrameBuffer();
+//    teapot->draw();
 
 
+//    cout<<"water fbo " << waterFrameBuffer->getReflectionTexture() << endl;
+//    cout<<"texture " << water->texture << endl;
 
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    water->setTexID(waterFrameBuffer->getReflectionTexture());
     glUseProgram(waterPorgram);
+    glUniform3fv(glGetUniformLocation(waterPorgram, "cameraPos"), 1, glm::value_ptr(cameraPos));
     glUniformMatrix4fv(waterProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(waterViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     water->draw();
     
 
-    glUseProgram(terrainProgram);
-    glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    //    terrain->draw();
-    terrain_ds->draw();
+    glUseProgram(skyboxProgram);
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    skybox->draw();
     
-    
-//    cout<< "snowid " << terrain_ds->snowID <<endl;
-//    cout<< "texture " << water->texture <<endl;
-    
+
     
     
     // set the function for mouse click
@@ -290,7 +401,12 @@ void Window::processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 10 * deltaTime;
+    float cameraSpeed = 50 * deltaTime;
+    
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+        water->moveWater(0.02);
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+        water->moveWater(-0.02);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -299,6 +415,7 @@ void Window::processInput(GLFWwindow *window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -398,4 +515,14 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 break;
         }
     }
+}
+glm::mat4 Window::getViewMatrix(){
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front = glm::normalize(front);
+    glm::mat4 res = glm::lookAt(cameraPos, cameraPos + front, cameraUp);
+    return res;
+    
 }

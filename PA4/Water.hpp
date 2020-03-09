@@ -27,17 +27,27 @@ class Water{
 private:
     GLuint program;
     GLuint vao;
+    
+    GLuint reflectTex;
+    GLuint refractTex;
+    GLuint dudvTex;
+    float moveFactor;
+    
+    
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<unsigned int> indices;
     std::vector<glm::vec2> texCoords;
     glm::mat4 model;
+    float y;
 public:
-    GLuint texture;
     Water(GLuint program,int size, float miny, float maxy,
           glm::mat4 model);
     void draw();
-    void setTexID(GLuint texture);
+    void setTexID(GLuint reflectionTex, GLuint refractionTex);
+    void moveWater(float y);
+    float getHeight();
+    void update();
   
 };
 #endif /* Water_hpp */
