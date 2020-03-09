@@ -13,6 +13,4 @@ out vec4 fragColor;
 void main()
 {
     fragColor = texture(skybox, TexCoords);
-//    fragColor = vec4(color, 1);
-    
 }

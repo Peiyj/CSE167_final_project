@@ -17,6 +17,8 @@ private:
     GLuint vao;
     GLuint vbo[2];
     GLuint ebo;
+    GLuint depthMapFBO;
+    GLuint depthMap;
     
     std::vector<unsigned int> indices;
     std::vector<glm::vec3> vertices;
@@ -48,8 +50,6 @@ public:
     void moveAxis(GLfloat x, GLfloat y, GLfloat z);
     
     void setModel(glm::mat4 m) {this->model = m;}
-    
-    
 };
 
 

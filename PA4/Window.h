@@ -21,12 +21,12 @@
 #include "shader.h"
 #include "DirectionalLight.h"
 #include "OBJObject.hpp"
-
 #include "Terrain.hpp"
 #include "Water.hpp"
 #include "WaterFrameBuffer.hpp"
 #include "Cube.h"
 
+#include "ShadowFrameBuffer.hpp"
 
 
 
@@ -56,9 +56,9 @@ public:
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	static glm::vec3 trackBallMapping(double xpos, double ypos);
-//	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void processInput(GLFWwindow *window);
     static glm::mat4 getViewMatrix();
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 };
 
 #endif

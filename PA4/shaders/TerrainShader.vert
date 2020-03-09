@@ -39,11 +39,6 @@ void main()
 //    gl_ClipDistance[0] = -1;
     gl_Position = projection * view * model * vec4(position, 1.0);
 //    normal_vector = normal;
-    TexCoord = aTexCoord*5;
-
-//    percentile = 1;
-    percentile = calcPercentile(position.y);
-    
-
+    TexCoord = aTexCoord*10;
 }
 

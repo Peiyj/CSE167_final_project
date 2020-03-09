@@ -13,14 +13,12 @@
 using namespace std;
 
 DirectionalLight::DirectionalLight(glm::vec3 color, glm::vec3 direction): color(color), direction(direction){
-//    PointCloud * sphere;
 }
 
 DirectionalLight::~DirectionalLight(){}
 
 void DirectionalLight::update()
 {
-    spin(0.005);
 }
 
 

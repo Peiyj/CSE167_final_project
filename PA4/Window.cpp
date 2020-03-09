@@ -9,7 +9,6 @@ namespace
     {
     int width, height;
     std::string windowTitle("GLFW Starter Project");
-    int state = 0;
     bool click = false;
     
     // camera
@@ -37,6 +36,9 @@ namespace
     
     GLuint normal_program; // The shader program id.
     GLuint toon_program; // The shader program id.
+    GLuint depth_program; //The depthMap program id.
+    GLuint depth_lightLoc; //The light matrix loc of the depthMap
+    GLuint depth_modelLoc; //The model matrix loc of the depthMap
     GLuint n_projectionLoc; // Location of projection in shader.
     GLuint n_viewLoc; // Location of view in shader.
     GLuint toon_projectionLoc; // Location of projection in shader.
@@ -65,6 +67,7 @@ namespace
     
     
     
+    ShadowFrameBuffer* shadowFrameBuffer;
     
     WaterFrameBuffer* waterFrameBuffer;
     
@@ -86,7 +89,11 @@ bool Window::initializeProgram()
     normal_program = LoadShaders("shaders/shader.vert", "shaders/shader.frag");
     // Create a shader program with a vertex shader and a fragment shader.
     toon_program = LoadShaders("shaders/LightShader.vert", "shaders/LightShader.frag");
-
+    // Create a shader program that tests the depth of the object (first pass of shadow mapping)
+    depth_program = LoadShaders("shaders/depthMap.vert", "shaders/depthMap.frag");
+    // location of projection and view
+    projectionLoc = glGetUniformLocation(program, "projection");
+    viewLoc = glGetUniformLocation(program, "view");
     // Check the shader program.
     if (!normal_program)
     {
@@ -126,6 +133,8 @@ bool Window::initializeProgram()
     
     skyboxProgram = LoadShaders("shaders/SkyboxShader.vert", "shaders/SkyboxShader.frag");
     
+    depth_lightLoc = glGetUniformLocation(depth_program, "lightSpaceMatrix");
+    depth_modelLoc = glGetUniformLocation(depth_program, "model");
     return true;
 }
 
@@ -135,13 +144,12 @@ bool Window::initializeObjects()
     // Create a point cloud consisting of cube vertices.
 //    terrain = new Terrain(terrainProgram, 1, 0, false);
 
-    teapot = new OBJObject("./teapot.obj", toon_program);
+    teapot = new OBJObject("./teapot.obj", depth_program);
     
     // Create a directional light source
     dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
     
     terrain_ds = new Terrain(terrainProgram, 0, 0, true);
-    
     
     water = new Water(waterPorgram, terrain_ds->getSize(),terrain_ds->getMiny(),
                       terrain_ds->getMaxy(), terrain_ds->getModel());
@@ -153,6 +161,7 @@ bool Window::initializeObjects()
     skybox = new Cube(4096, skyboxProgram);
 
     
+    shadowFrameBuffer = new ShadowFrameBuffer(width, height);
     
 
     return true;
@@ -234,8 +243,6 @@ void Window::resizeCallback(GLFWwindow* window, int w, int h)
     // In case your Mac has a retina display.
     glfwGetFramebufferSize(window, &width, &height);
 #endif
-    //    width = w;
-    //    height = h;
     // Set the viewport size.
     glViewport(0, 0, width, height);
     // Set the projection matrix.
@@ -253,10 +260,15 @@ void Window::idleCallback()
 
 void Window::displayCallback(GLFWwindow* window)
 {
+    
+    // location of the light
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+    
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     // input
     // -----
     processInput(window);
@@ -524,5 +536,10 @@ glm::mat4 Window::getViewMatrix(){
     front = glm::normalize(front);
     glm::mat4 res = glm::lookAt(cameraPos, cameraPos + front, cameraUp);
     return res;
-    
+}
+
+void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height){
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
 }
