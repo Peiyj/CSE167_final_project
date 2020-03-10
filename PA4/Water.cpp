@@ -16,7 +16,7 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     moveFactor = 0;
     //set percentile 0.2 as the water
     y = 0.2*(maxy-miny)+miny;
-    int VERTEX_COUNT = 2;
+    int VERTEX_COUNT = 129;
     for(int i = 0; i < VERTEX_COUNT; i++){
         for(int j = 0; j < VERTEX_COUNT; j++){
             float x = j/((float)VERTEX_COUNT - 1) * size;
@@ -42,11 +42,11 @@ Water::Water(GLuint program, int size, float miny, float maxy,
             indices.push_back(bottomRight);
         }
     }
-    GLuint vbo[2];
+    GLuint vbo[3];
     GLuint ebo;
     // Generate a vertex array (VAO) and a vertex buffer objects (VBO).
     glGenVertexArrays(1, &vao);
-    glGenBuffers(2, &vbo[0]);
+    glGenBuffers(3, &vbo[0]);
     
     // Bind to the VAO.
     // This tells OpenGL which data it should be paying attention to
@@ -102,6 +102,7 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     glUniform1i(glGetUniformLocation(program, "reflectionTex"), 3);
     glUniform1i(glGetUniformLocation(program, "refractionTex"), 4);
     glUniform1i(glGetUniformLocation(program, "dudvTex"), 5);
+    glUniform1i(glGetUniformLocation(program, "depthMap"), 6);
     
     
     glBindTexture(GL_TEXTURE_2D, dudvTex);
@@ -128,12 +129,19 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     y = (model*glm::vec4(0,y,0,1)).y;
 }
 void Water::draw(){
+    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, reflectTex);
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, refractTex);
     glActiveTexture(GL_TEXTURE5);
     glBindTexture(GL_TEXTURE_2D, dudvTex);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, refractionDepthTex);
 
 //    glm::vec3 color = glm::vec3(0, 0.4, 0.8);
 //    glm::vec3 color = glm::vec3(1);
@@ -148,12 +156,14 @@ void Water::draw(){
     // Unbind from the VAO.
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_BLEND);
     
 }
 
-void Water::setTexID(GLuint reflectTex, GLuint refractTex){
+void Water::setTexID(GLuint reflectTex, GLuint refractTex, GLuint refractionDepthTex){
     this->reflectTex = reflectTex;
     this->refractTex = refractTex;
+    this->refractionDepthTex = refractionDepthTex;
 }
 void Water::moveWater(float y){
     model = glm::translate(glm::mat4(1), glm::vec3(0,y,0)) * model;
@@ -163,6 +173,7 @@ float Water::getHeight(){
     return y;
 }
 void Water::update(){
-    moveFactor += 0.0003;
+//    moveFactor += 0.000005;
+    moveFactor += 0.00005;
     moveFactor = fmod(moveFactor, 1.0f);
 }

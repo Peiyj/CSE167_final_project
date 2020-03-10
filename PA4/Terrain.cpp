@@ -29,15 +29,13 @@ Terrain::Terrain(GLuint program, int gridX, int gridZ, bool diamondSquare){
                 arr[j][i] = NULL;
             }
         }
-        //    arr[0][0] = random(VERTEX_COUNT);
-        //
-        //    arr[VERTEX_COUNT-1][0] = random(VERTEX_COUNT);
-        //    arr[0][VERTEX_COUNT-1] = random(VERTEX_COUNT);
-        //    arr[VERTEX_COUNT-1][VERTEX_COUNT-1] = random(VERTEX_COUNT);
+        
         arr[0][0] = 0;
         arr[VERTEX_COUNT-1][0] = 0;
         arr[0][VERTEX_COUNT-1] = 0;
         arr[VERTEX_COUNT-1][VERTEX_COUNT-1] = 0;
+        
+        srand(time(NULL));
         
         dsRecursion(arr, VERTEX_COUNT-1);
     }
@@ -66,12 +64,20 @@ void Terrain::generateTerrain(float** height_map, bool diamondSquare){
             vertices.push_back(glm::vec3(x,y,z));
             
             //            normals.push_back(calculateNormal(j, i, hmap_data));
-            normals.push_back(glm::vec3(0,1,0));
+//            normals.push_back(glm::vec3(0,1,0));
             float u = j/((float)VERTEX_COUNT - 1);
             float v = i/((float)VERTEX_COUNT - 1);
             texCoords.push_back(glm::vec2(u,v));
         }
     }
+    // loop through z
+    for(float i = 0; i < VERTEX_COUNT; i++){
+        // loop through x
+        for(float j = 0; j < VERTEX_COUNT; j++){
+            normals.push_back(calculateNormal(j, i, nullptr));
+        }
+    }
+    
     for(int z = 0; z < VERTEX_COUNT - 1; z++){
         for(int x = 0; x < VERTEX_COUNT - 1; x++){
             int topLeft = (z*VERTEX_COUNT)+x;
@@ -269,7 +275,6 @@ glm::vec3 Terrain::calculateNormal(int x, int z, unsigned char *data){
     glm::vec3 normal = glm::vec3(heightL - heightR, 2, heightD-heightU);
     normal = normalize(normal);
     return normal;
-    return glm::vec3(0);
 }
 void Terrain::diamondSquare(float **arr, int startW, int endW, int startH, int endH,
                             bool diamond, float r){
@@ -388,6 +393,11 @@ void Terrain::convert(float** heightmap, float minHeight, float maxHeight){
     
 }
 float Terrain::getHeight(int x, int z, unsigned char *data){
+    if(data == nullptr){
+        if(x<0 || x>=VERTEX_COUNT || z < 0 || z>= VERTEX_COUNT) return 0;
+        float height = vertices[z*VERTEX_COUNT+x].y;
+        return height;
+    }
     if(x<0 || x> hmapWidth || z < 0 || z > hmapHeight) return 0;
     int r = data[(z*hmapWidth+x)*4];
     int g = data[(z*hmapWidth+x)*4+1];

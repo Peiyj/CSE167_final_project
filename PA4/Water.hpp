@@ -31,6 +31,7 @@ private:
     GLuint reflectTex;
     GLuint refractTex;
     GLuint dudvTex;
+    GLuint refractionDepthTex;
     float moveFactor;
     
     
@@ -44,7 +45,7 @@ public:
     Water(GLuint program,int size, float miny, float maxy,
           glm::mat4 model);
     void draw();
-    void setTexID(GLuint reflectionTex, GLuint refractionTex);
+    void setTexID(GLuint reflectionTex, GLuint refractionTex, GLuint refractionDepthTex);
     void moveWater(float y);
     float getHeight();
     void update();

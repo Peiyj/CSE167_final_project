@@ -27,7 +27,7 @@ private:
     GLuint modelLoc;
     GLuint vao;
     int VERTEX_COUNT;
-    int SIZE = 400;
+    int SIZE = 800;
     int MAX_HEIGHT = 20;
     int MAX_PIXEL_COLOR = 256*256*256;
     float maxy;

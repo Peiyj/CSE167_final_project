@@ -147,7 +147,9 @@ bool Window::initializeObjects()
     teapot = new OBJObject("./teapot.obj", depth_program);
     
     // Create a directional light source
-    dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(-1, -1, 0));
+    //first is color, second is direction
+//    dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(1, -1, 0));
+    dlight = new DirectionalLight(glm::vec3(1,1,1), glm::vec3(1, -1, 1));
     
     terrain_ds = new Terrain(terrainProgram, 0, 0, true);
     
@@ -155,7 +157,8 @@ bool Window::initializeObjects()
                       terrain_ds->getMaxy(), terrain_ds->getModel());
     
     waterFrameBuffer = new WaterFrameBuffer(width, height);
-    water->setTexID(waterFrameBuffer->getReflectionTexture(), waterFrameBuffer->getRefractionTexture());
+    water->setTexID(waterFrameBuffer->getReflectionTexture(), waterFrameBuffer->getRefractionTexture()
+                    ,waterFrameBuffer->getRefractionDepthTexture());
 
     
     skybox = new Cube(4096, skyboxProgram);
@@ -278,6 +281,8 @@ void Window::displayCallback(GLFWwindow* window)
     
     
     
+
+    
     // Clear the color and depth buffers.
     glEnable(GL_CLIP_DISTANCE0);
     
@@ -305,7 +310,25 @@ void Window::displayCallback(GLFWwindow* window)
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(reflectView));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 //        terrain->draw();
+    glm::vec3 ambient = glm::vec3(0.4);
+    glm::vec3 specular = glm::vec3(1);
+    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.specular"), 1, glm::value_ptr(specular));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
     terrain_ds->draw();
+    
+    
+    
+    glUseProgram(skyboxProgram);
+    glUniform4fv(glGetUniformLocation(skyboxProgram, "plane"), 1, glm::value_ptr(reflectionPlane));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "view"), 1, GL_FALSE,
+                       glm::value_ptr(reflectView));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    skybox->draw();
+    
     
     
     
@@ -326,13 +349,23 @@ void Window::displayCallback(GLFWwindow* window)
     waterFrameBuffer->bindRefractionFrameBuffer();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //
-    glm::vec4 refractionPlane = glm::vec4(0, -1, 0, water->getHeight());
+    glm::vec4 refractionPlane = glm::vec4(0, -1, 0, water->getHeight()+0.5f);
     glUseProgram(terrainProgram);
     glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(refractionPlane));
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     //        terrain->draw();
     terrain_ds->draw();
+    
+    
+    
+    glUseProgram(skyboxProgram);
+    glUniform4fv(glGetUniformLocation(skyboxProgram, "plane"), 1, glm::value_ptr(refractionPlane));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    skybox->draw();
     waterFrameBuffer->unbindFrameBuffer();
     
     
@@ -349,7 +382,6 @@ void Window::displayCallback(GLFWwindow* window)
 //    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(reflectionPlane));
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    //        terrain->draw();
     terrain_ds->draw();
     
     
@@ -413,12 +445,12 @@ void Window::processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    float cameraSpeed = 50 * deltaTime;
+    float cameraSpeed = 110 * deltaTime;
     
     if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-        water->moveWater(0.02);
+        water->moveWater(0.2);
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-        water->moveWater(-0.02);
+        water->moveWater(-0.2);
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         cameraPos += cameraSpeed * cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
