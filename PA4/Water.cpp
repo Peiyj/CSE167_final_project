@@ -14,9 +14,10 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     this->program = program;
     this->model = model;
     moveFactor = 0;
+    waveTime = 0;
     //set percentile 0.2 as the water
     y = 0.2*(maxy-miny)+miny;
-    int VERTEX_COUNT = 129;
+    int VERTEX_COUNT = 75;
     for(int i = 0; i < VERTEX_COUNT; i++){
         for(int j = 0; j < VERTEX_COUNT; j++){
             float x = j/((float)VERTEX_COUNT - 1) * size;
@@ -40,6 +41,12 @@ Water::Water(GLuint program, int size, float miny, float maxy,
             indices.push_back(topRight);
             indices.push_back(bottomLeft);
             indices.push_back(bottomRight);
+            normals.push_back(calculateOffset(topLeft, bottomLeft, topRight));
+            normals.push_back(calculateOffset(bottomLeft, topRight, topLeft));
+            normals.push_back(calculateOffset(topRight, topLeft, bottomLeft));
+            normals.push_back(calculateOffset(topRight, bottomLeft, bottomRight));
+            normals.push_back(calculateOffset(bottomLeft, bottomRight, topRight));
+            normals.push_back(calculateOffset(bottomRight, topRight, bottomLeft));
         }
     }
     GLuint vbo[3];
@@ -78,10 +85,10 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
     // pass in normals
     glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3)*this->normals.size(),
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4)*this->normals.size(),
                  this->normals.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), 0);
     
     
     // pass in tex coords
@@ -149,6 +156,8 @@ void Water::draw(){
 //    glUniform3fv(glGetUniformLocation(program, "color"), 1, glm::value_ptr(color));
     glUniform1f(glGetUniformLocation(program, "moveFactor"), moveFactor);
     
+    glUniform1f(glGetUniformLocation(program, "waveTime"), waveTime);
+//    std::cout << waveTime << std::endl;
     // Bind to the VAO.
     glBindVertexArray(vao);
     // VAO knows to use EBO, which is the last slot in VAO
@@ -176,4 +185,16 @@ void Water::update(){
 //    moveFactor += 0.000005;
     moveFactor += 0.00005;
     moveFactor = fmod(moveFactor, 1.0f);
+    
+    waveTime += 0.002;
 }
+glm::vec4 Water::calculateOffset(int index1, int index2, int index3){
+    glm::vec3 vertex1 = vertices[index1];
+    glm::vec3 vertex2 = vertices[index2];
+    glm::vec3 vertex3 = vertices[index3];
+    glm::vec3 diff1 = vertex2 - vertex1;
+    glm::vec3 diff2 = vertex3 - vertex1;
+    return glm::vec4(diff1.x, diff1.z, diff2.x, diff2.z);
+    
+}
+

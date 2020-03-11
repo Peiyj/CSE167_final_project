@@ -22,12 +22,12 @@
 #include <stdlib.h>     /* srand, rand */
 class WaterFrameBuffer{
 private:
-//    int REFLECTION_WIDTH = 1536;
-//    int REFLECTION_HEIGHT = 960;
+    int REFLECTION_WIDTH = 1536;
+    int REFLECTION_HEIGHT = 960;
     int REFRACTION_WIDTH = 1536;
     int REFRACTION_HEIGHT = 960;
-    int REFLECTION_WIDTH = 320;
-    int REFLECTION_HEIGHT = 180;
+//    int REFLECTION_WIDTH = 320;
+//    int REFLECTION_HEIGHT = 180;
 //    int REFRACTION_WIDTH = 320;
 //    int REFRACTION_HEIGHT = 180;
     int original_width;

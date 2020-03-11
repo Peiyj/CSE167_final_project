@@ -349,7 +349,7 @@ void Window::displayCallback(GLFWwindow* window)
     waterFrameBuffer->bindRefractionFrameBuffer();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //
-    glm::vec4 refractionPlane = glm::vec4(0, -1, 0, water->getHeight()+0.5f);
+    glm::vec4 refractionPlane = glm::vec4(0, -1, 0, water->getHeight()+10.0f);
     glUseProgram(terrainProgram);
     glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(refractionPlane));
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -398,12 +398,12 @@ void Window::displayCallback(GLFWwindow* window)
     
     
     
-    glUseProgram(toon_program);
-    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
-    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
-    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
+//    glUseProgram(toon_program);
+//    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+//    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+//    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
+//    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
+//    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
 //    teapot->draw();
 
 
@@ -416,6 +416,11 @@ void Window::displayCallback(GLFWwindow* window)
     glUniform3fv(glGetUniformLocation(waterPorgram, "cameraPos"), 1, glm::value_ptr(cameraPos));
     glUniformMatrix4fv(waterProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(waterViewLoc, 1, GL_FALSE, glm::value_ptr(view));
+//    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+//    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.specular"), 1, glm::value_ptr(specular));
+    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(glGetUniformLocation(waterPorgram, "viewPos"), 1, glm::value_ptr(cameraPos));
     water->draw();
     
 
@@ -424,6 +429,7 @@ void Window::displayCallback(GLFWwindow* window)
                        glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "projection"), 1, GL_FALSE,
                        glm::value_ptr(projection));
+    
     skybox->draw();
     
 

@@ -35,8 +35,11 @@ private:
     float moveFactor;
     
     
+    float waveTime;
+    
+    
     std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> normals;
+    std::vector<glm::vec4> normals;
     std::vector<unsigned int> indices;
     std::vector<glm::vec2> texCoords;
     glm::mat4 model;
@@ -49,6 +52,7 @@ public:
     void moveWater(float y);
     float getHeight();
     void update();
+    glm::vec4 calculateOffset(int index1, int index2, int index3);
   
 };
 #endif /* Water_hpp */
