@@ -43,6 +43,14 @@ Terrain::Terrain(GLuint program, int gridX, int gridZ, bool diamondSquare){
     
     model = glm::translate(glm::mat4(1), glm::vec3(-SIZE/2 + SIZE*gridX, -(miny+(maxy-miny)/2), -SIZE/2+SIZE*gridZ));
 }
+Terrain::~Terrain(){
+    glDeleteBuffers(3, &vbo[0]);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &ebo);
+    glDeleteTextures(1, &grassID);
+    glDeleteTextures(1, &snowID);
+    glDeleteTextures(1, &sandID);
+}
 void Terrain::generateTerrain(float** height_map, bool diamondSquare){
     // loop through z
     maxy = -FLT_MAX;
@@ -93,8 +101,6 @@ void Terrain::generateTerrain(float** height_map, bool diamondSquare){
         }
     }
     
-    GLuint vbo[3];
-    GLuint ebo;
     // Generate a vertex array (VAO) and a vertex buffer objects (VBO).
     glGenVertexArrays(1, &vao);
     glGenBuffers(3, &vbo[0]);
@@ -417,6 +423,7 @@ vector<glm::vec3> Terrain::getVertices(){
 vector<unsigned int> Terrain::getIndices(){
     return indices;
 }
+
 float Terrain::getMiny(){
     return miny;
 }

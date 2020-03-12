@@ -558,9 +558,13 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 
             case GLFW_KEY_R:
             {
-                view = glm::lookAt(cameraPos, center, cameraUp);
+//                view = glm::lookAt(cameraPos, center, cameraUp);
                 break;
             }
+            case GLFW_KEY_N:
+                delete(terrain_ds);
+                terrain_ds = new Terrain(terrainProgram, 0, 0, true);
+                break;
             default:
                 break;
         }

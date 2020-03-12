@@ -43,10 +43,13 @@ private:
     std::vector<unsigned int> indices;
     std::vector<glm::vec2> texCoords;
     
+    GLuint vbo[3];
+    GLuint ebo;
 public:
     GLuint grassID;
     GLuint sandID;
     GLuint snowID;
+    ~Terrain();
     Terrain(GLuint program, int gridX, int gridZ, bool diamondSquare);
     void generateTerrain(float**, bool diamondSquare);
     unsigned char* heightmap();

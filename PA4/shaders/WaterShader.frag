@@ -152,7 +152,7 @@ void main()
     
     
     
-    color = color+specular;
+//    color = color+specular;
     
     
     
