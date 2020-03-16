@@ -13,6 +13,8 @@ Water::Water(GLuint program, int size, float miny, float maxy,
              glm::mat4 model){
     this->program = program;
     this->model = model;
+    normalColor = 0;
+    drawLine = false;
     moveFactor = 0;
     waveTime = 0;
     //set percentile 0.2 as the water
@@ -136,6 +138,8 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     y = (model*glm::vec4(0,y,0,1)).y;
 }
 void Water::draw(){
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -159,13 +163,19 @@ void Water::draw(){
     glUniform1f(glGetUniformLocation(program, "waveTime"), waveTime);
 //    std::cout << waveTime << std::endl;
     // Bind to the VAO.
+    glUniform1i(glGetUniformLocation(program, "isNormalColor"), normalColor);
     glBindVertexArray(vao);
     // VAO knows to use EBO, which is the last slot in VAO
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    
+    if(drawLine){
+        glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+    }
+    else glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     // Unbind from the VAO.
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
     
 }
 
@@ -196,5 +206,11 @@ glm::vec4 Water::calculateOffset(int index1, int index2, int index3){
     glm::vec3 diff2 = vertex3 - vertex1;
     return glm::vec4(diff1.x, diff1.z, diff2.x, diff2.z);
     
+}
+void Water::switchToDrawLine(){
+    drawLine = !drawLine;
+}
+void Water::switchToNormal(){
+    normalColor = !normalColor;
 }
 

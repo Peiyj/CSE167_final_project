@@ -271,7 +271,6 @@ void Window::displayCallback(GLFWwindow* window)
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     // input
     // -----
     processInput(window);
@@ -288,7 +287,7 @@ void Window::displayCallback(GLFWwindow* window)
     
     
     
-    
+    ///*
     // first redner to reflection FBO
     waterFrameBuffer->bindReflectionFrameBuffer();
     // move the camera below the water
@@ -338,13 +337,13 @@ void Window::displayCallback(GLFWwindow* window)
     cameraPos.y +=distance;
     pitch = -pitch;
     
+//   */
     
-    
-    
-    
-    
+//    glm::vec3 ambient = glm::vec3(0.4);
+//    glm::vec3 specular = glm::vec3(1);
 
     
+
     // render again in the refraction fbo
     waterFrameBuffer->bindRefractionFrameBuffer();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -354,6 +353,11 @@ void Window::displayCallback(GLFWwindow* window)
     glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(refractionPlane));
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.specular"), 1, glm::value_ptr(specular));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
     //        terrain->draw();
     terrain_ds->draw();
     
@@ -379,45 +383,39 @@ void Window::displayCallback(GLFWwindow* window)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glUseProgram(terrainProgram);
-//    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(reflectionPlane));
+    glUniform4fv(glGetUniformLocation(terrainProgram, "plane"), 1, glm::value_ptr(glm::vec4(0)));
     glUniformMatrix4fv(terrainViewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(terrainProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    
+    
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.specular"), 1, glm::value_ptr(specular));
+//    glUniform3fv(glGetUniformLocation(terrainProgram, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(glGetUniformLocation(terrainProgram, "viewPos"), 1, glm::value_ptr(cameraPos));
     terrain_ds->draw();
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-//    glUseProgram(toon_program);
-//    glUniformMatrix4fv(toon_viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-//    glUniformMatrix4fv(toon_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-//    glUniform3fv(dlightColor_loc, 1, glm::value_ptr(dlight->color));
-//    glUniform3fv(dlightDirection_loc, 1, glm::value_ptr(dlight->direction));
-//    glUniform3fv(cameraPos_loc, 1, glm::value_ptr(cameraPos));
-//    teapot->draw();
 
-
-//    cout<<"water fbo " << waterFrameBuffer->getReflectionTexture() << endl;
-//    cout<<"texture " << water->texture << endl;
-
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     glUseProgram(waterPorgram);
     glUniform3fv(glGetUniformLocation(waterPorgram, "cameraPos"), 1, glm::value_ptr(cameraPos));
     glUniformMatrix4fv(waterProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(waterViewLoc, 1, GL_FALSE, glm::value_ptr(view));
-//    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
-//    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+    glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
     glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.specular"), 1, glm::value_ptr(specular));
     glUniform3fv(glGetUniformLocation(waterPorgram, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
     glUniform3fv(glGetUniformLocation(waterPorgram, "viewPos"), 1, glm::value_ptr(cameraPos));
@@ -544,21 +542,20 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 // Close the window. This causes the program to also terminate.
                 glfwSetWindowShouldClose(window, GL_TRUE);
                 break;
-            case GLFW_KEY_F1:
-                // Set currentObj to cube
-                
+            //switch to debug window drawline
+            case GLFW_KEY_1:
+                water->switchToDrawLine();
                 break;
-            case GLFW_KEY_F2:
-                // Set currentObj to cubePoints
-                
+            case GLFW_KEY_2:
+                water->switchToNormal();
                 break;
             case GLFW_KEY_F3:
 
                 break;
                 
-            case GLFW_KEY_R:
+            case GLFW_KEY_T:
             {
-//                view = glm::lookAt(cameraPos, center, cameraUp);
+                terrain_ds->switchToToneShading();
                 break;
             }
             case GLFW_KEY_N:

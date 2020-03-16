@@ -12,6 +12,7 @@ using namespace std;
 
 Terrain::Terrain(GLuint program, int gridX, int gridZ, bool diamondSquare){
     this->program = program;
+    toneShading = 0;
     counter = 0;
     modelLoc = glGetUniformLocation(program, "model");
     this->gridX = gridX;
@@ -256,6 +257,8 @@ unsigned char* Terrain::heightmap(){
     return data;
 }
 void Terrain::draw(){
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, grassID);
     glActiveTexture(GL_TEXTURE1);
@@ -263,6 +266,7 @@ void Terrain::draw(){
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, snowID);
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniform1i(glGetUniformLocation(program, "isToneShading"), toneShading);
     
     // Bind to the VAO.
     glBindVertexArray(vao);
@@ -272,6 +276,7 @@ void Terrain::draw(){
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 //    glActiveTexture(0);
+    glDisable(GL_CULL_FACE);
 }
 glm::vec3 Terrain::calculateNormal(int x, int z, unsigned char *data){
     float heightL = getHeight(x-1, z, data);
@@ -432,4 +437,7 @@ float Terrain::getMaxy(){
 }
 int Terrain::getSize(){
     return SIZE;
+}
+void Terrain::switchToToneShading(){
+    toneShading = !toneShading;
 }

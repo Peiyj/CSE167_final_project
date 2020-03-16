@@ -45,6 +45,7 @@ private:
     
     GLuint vbo[3];
     GLuint ebo;
+    GLint toneShading;
 public:
     GLuint grassID;
     GLuint sandID;
@@ -66,6 +67,7 @@ public:
     float getMiny();
     float getMaxy();
     int getSize();
+    void switchToToneShading();
     
     
 };

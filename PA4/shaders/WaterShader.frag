@@ -23,6 +23,9 @@ uniform sampler2D dudvMap;
 
 uniform sampler2D depthMap;
 
+
+
+uniform int isNormalColor;
 uniform float moveFactor;
 
 uniform vec3 viewPos;
@@ -157,8 +160,7 @@ void main()
     
     
     fragColor = vec4(color, 1.0);
-//    fragColor = vec4(normal, 1.0);
-    
+
     
     // make water blueish
 //    fragColor = mix(fragColor, vec4(0, 0.3, 0.5, 1.0), 0.4);
@@ -166,6 +168,7 @@ void main()
     
     // make soft edges
     fragColor.a = clamp(waterDepth/20.0, 0.0, 1.0);
+    fragColor = isNormalColor*vec4(normal*5, 1.0) + (1-isNormalColor) * fragColor;
     
     
     //test if depth works

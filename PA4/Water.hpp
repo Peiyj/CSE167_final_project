@@ -43,6 +43,9 @@ private:
     std::vector<unsigned int> indices;
     std::vector<glm::vec2> texCoords;
     glm::mat4 model;
+    bool drawLine;
+    GLint normalColor;
+
     float y;
 public:
     Water(GLuint program,int size, float miny, float maxy,
@@ -53,6 +56,8 @@ public:
     float getHeight();
     void update();
     glm::vec4 calculateOffset(int index1, int index2, int index3);
-  
+    void switchToDrawLine();
+    void switchToNormal();
+
 };
 #endif /* Water_hpp */
