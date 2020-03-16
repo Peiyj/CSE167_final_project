@@ -78,7 +78,9 @@ namespace
     // timing
     float deltaTime = 0.0f;    // time between current frame and last frame
     float lastFrame = 0.0f;
-
+    
+    // enable movement
+    bool enableMovement = false;
     };
 
 bool Window::initializeProgram()
@@ -455,19 +457,21 @@ void Window::processInput(GLFWwindow *window)
         water->moveWater(0.2);
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
         water->moveWater(-0.2);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (enableMovement == true){
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            cameraPos += cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            cameraPos -= cameraSpeed * cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
 void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    if(click){
+    if(click && enableMovement){
         float xoffset = xpos - lastX;
         float yoffset = lastY - ypos;
         lastX = xpos;
@@ -556,6 +560,14 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
             case GLFW_KEY_T:
             {
                 terrain_ds->switchToToneShading();
+                break;
+            }
+            case GLFW_KEY_C:
+            {
+                if (enableMovement == true)
+                    enableMovement = false;
+                else
+                    enableMovement = true;
                 break;
             }
             case GLFW_KEY_N:
