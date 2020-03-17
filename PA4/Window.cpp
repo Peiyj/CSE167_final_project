@@ -37,6 +37,7 @@ namespace
     GLuint normal_program; // The shader program id.
     GLuint toon_program; // The shader program id.
     GLuint depth_program; //The depthMap program id.
+    GLuint curve_program;
     GLuint depth_lightLoc; //The light matrix loc of the depthMap
     GLuint depth_modelLoc; //The model matrix loc of the depthMap
     GLuint n_projectionLoc; // Location of projection in shader.
@@ -48,6 +49,22 @@ namespace
     GLuint cameraPos_loc; // camera location
 
     OBJObject* teapot;
+    OBJObject* plane;
+    Transform* root;
+    vector<Transform*> needUpdate;
+    
+    
+    Curve* line[2];
+    float currLine = 0;
+    glm::vec3 prevPos = glm::vec3(-1, 0, 0);
+    
+    
+    
+    
+    
+    
+    
+    
     DirectionalLight* dlight;
     
     GLuint terrainProgram;
@@ -81,6 +98,8 @@ namespace
     
     // enable movement
     bool enableMovement = false;
+    
+    
     };
 
 bool Window::initializeProgram()
@@ -137,20 +156,20 @@ bool Window::initializeProgram()
     
     depth_lightLoc = glGetUniformLocation(depth_program, "lightSpaceMatrix");
     depth_modelLoc = glGetUniformLocation(depth_program, "model");
+    
+    
+    curve_program = LoadShaders("shaders/CurveShader.vert", "shaders/CurveShader.frag");
     return true;
 }
 
 bool Window::initializeObjects()
 {
 
-    // Create a point cloud consisting of cube vertices.
-//    terrain = new Terrain(terrainProgram, 1, 0, false);
 
-    teapot = new OBJObject("./teapot.obj", depth_program);
     
-    // Create a directional light source
-    //first is color, second is direction
-//    dlight = new DirectionalLight(glm::vec3(1,1,0), glm::vec3(1, -1, 0));
+    
+    
+    
     dlight = new DirectionalLight(glm::vec3(1,1,1), glm::vec3(1, -1, 1));
     
     terrain_ds = new Terrain(terrainProgram, 0, 0, true);
@@ -168,7 +187,78 @@ bool Window::initializeObjects()
     
     shadowFrameBuffer = new ShadowFrameBuffer(width, height);
     
+    
+    
+    plane = new OBJObject("./toyPlane.obj", normal_program);
+    
+    
+    
+    
+    
+    Transform* head= new Transform(glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0,1,0)));
+    // make the body of the plane
+    Transform* bodyM = new Transform(glm::mat4(1));
+    Geometry* body = new Geometry("./plane/body.obj", normal_program);
+    bodyM->addChild(body);
+    head->addChild(bodyM);
+    
+    
+    // make the nose of the plane
+    Transform* noseM = new Transform(glm::mat4(1));
+    Geometry* nose = new Geometry("./plane/nose.obj", normal_program);
+    noseM->addChild(nose);
+    head->addChild(noseM);
+    needUpdate.push_back(noseM);
+    
+    // make the front metal of the plane
+    Transform* frontM = new Transform(glm::mat4(1));
+    Geometry* front = new Geometry("./plane/frontMetal.obj", normal_program);
+    frontM->addChild(front);
+    head->addChild(frontM);
+    
+    Transform* bladesM = new Transform(glm::mat4(1));
+    Geometry* blades = new Geometry("./plane/blades.obj", normal_program);
+    bladesM->addChild(blades);
+    head->addChild(bladesM);
+    needUpdate.push_back(bladesM);
 
+    
+    
+    
+
+    root = new Transform(glm::mat4(1));
+    root->addChild(head);
+    
+    
+    
+    
+    float terrainMaxHeight = ((terrain_ds->getModel())*(glm::vec4(0, terrain_ds->getMaxy(), 0, 1))).y;
+    float terrainSize = terrain_ds->getSize();
+    float planeHeight = terrainMaxHeight + 5;
+    glm::vec3 p0, p1, p2, p3;
+    p0 = glm::vec3(0, planeHeight, 0);
+    p1 = glm::vec3(-terrainSize/4, planeHeight, terrainSize/4);
+    p2 = glm::vec3(terrainSize/4, planeHeight, terrainSize/4);
+    p3 = p0;
+    line[0] = new Curve(curve_program, p0, p1, p2, p3);
+    p0 = p3;
+    p1 = glm::vec3(-terrainSize/4, planeHeight, -terrainSize/4);
+    p2 = glm::vec3(terrainSize/4, planeHeight, -terrainSize/4);
+    p3 = p0;
+    line[1] = new Curve(curve_program, p0, p1, p2, p3);
+
+    
+    
+    
+    
+    
+    
+    
+    
+    root->moveMatrix(p0);
+    prevPos = p0;
+    
+    
     return true;
 }
 
@@ -261,6 +351,33 @@ void Window::idleCallback()
 
     waterFrameBuffer->setWidthHeight(width, height);
     water->update();
+    
+    
+    for(Transform* transform: needUpdate){
+        transform->updateRotation();
+    }
+    
+    
+    int currLineInt = (int)currLine;
+    glm::vec3 pos = line[currLineInt]->calcBezier(currLine-currLineInt);
+    root->moveMatrix(pos);
+    currLine += 0.0001;
+    if(currLine >= 2) currLine = 0;
+    
+    pos = glm::vec3(pos.x, 0, pos.z);
+    prevPos = glm::vec3(prevPos.x, 0, prevPos.z);
+    glm::vec3 diff = pos - prevPos;
+    
+    float angle = glm::atan(diff.x, diff.z);
+    root->rotatePlane(angle);
+    prevPos = pos;
+//    cout << glm::to_string(diff) << endl;
+//    cout<<glm::degrees(angle) <<endl;
+
+    root->update();
+    
+    
+    
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -433,7 +550,25 @@ void Window::displayCallback(GLFWwindow* window)
     skybox->draw();
     
 
+    glUseProgram(normal_program);
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    root->draw(glm::mat4(1));
     
+    
+    glUseProgram(curve_program);
+    glUniformMatrix4fv(glGetUniformLocation(curve_program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(curve_program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    for(Curve* l: line){
+        l->draw();
+    }
+    
+    
+
     
     // set the function for mouse click
     glfwSetMouseButtonCallback(window, mouse_button_callback);

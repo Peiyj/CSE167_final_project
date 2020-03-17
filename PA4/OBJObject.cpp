@@ -68,10 +68,10 @@ OBJObject::OBJObject(const char* obj, GLuint program)
             normals.push_back(glm::vec3(x,y,z));
         }
         else if(c1 == 'f' && c2 == ' '){
-//            fscanf(fp, "%d//%d %d//%d %d//%d", &i1, &n1, &i2, &n2,
-//                   &i3, &n3);
-            fscanf(fp, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &t1, &n1, &i2, &t2, &n2,
-                   &i3, &t3, &n3);
+            fscanf(fp, "%d//%d %d//%d %d//%d", &i1, &n1, &i2, &n2,
+                   &i3, &n3);
+//            fscanf(fp, "%d/%d/%d %d/%d/%d %d/%d/%d", &i1, &t1, &n1, &i2, &t2, &n2,
+//                   &i3, &t3, &n3);
             vertices_idx.push_back(i1-1);
             vertices_idx.push_back(i2-1);
             vertices_idx.push_back(i3-1);
@@ -111,9 +111,10 @@ OBJObject::OBJObject(const char* obj, GLuint program)
     scalez = 2/(maxz-minz);
     
     float scale_factor = min(min(scalex, scaley), scalez);
-    scale_factor = 10;
+    scale_factor = 1;
     
-    model = glm::scale(glm::mat4(1), glm::vec3(scale_factor))*glm::translate(glm::mat4(1.0f), -center)*glm::mat4(1.0f);
+//    model = glm::scale(glm::mat4(1), glm::vec3(scale_factor))*glm::translate(glm::mat4(1.0f), -center)*glm::mat4(1.0f);
+    model = glm::mat4(1);
     original_model = model;
     moved_model = glm::translate(glm::mat4(1), glm::vec3(0,0,0));
     scaled_model = glm::scale(glm::mat4(1), glm::vec3(1));
@@ -179,8 +180,8 @@ OBJObject::~OBJObject()
 
 void OBJObject::draw()
 {
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniform3fv(colorLoc, 1, glm::value_ptr(glm::vec3(1)));
+//    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+//    glUniform3fv(colorLoc, 1, glm::value_ptr(glm::vec3(1)));
 
     // Bind to the VAO.
     glBindVertexArray(vao);
@@ -216,5 +217,6 @@ void OBJObject::reset(){
 void OBJObject::mouseRotate(float rot_angle, glm::vec3 rotAxis) {
     
     rotated_model = glm::rotate(glm::mat4(1.0f), glm::radians(rot_angle), rotAxis) * rotated_model;
+    
     
 }
