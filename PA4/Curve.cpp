@@ -13,17 +13,17 @@ Curve::Curve(GLuint program, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2, glm::vec3
     modelLoc = glGetUniformLocation(program, "model");
     colorLoc = glGetUniformLocation(program, "color");
     color = glm::vec3(1, 0, 0.2);
-    int numSeg = 150;
+//    int numSeg = 150;
     
     a = -p0+3.0f*p1-3.0f*p2+p3;
     b = 3.0f*p0-6.0f*p1+3.0f*p2;
     c = -3.0f*p0 + 3.0f*p1;
     d = p0;
     
-    for(float i = 0; i <= numSeg; i++){
-        float t = i/numSeg;
-        lines.push_back(calcBezier(t));
-    }
+//    for(float i = 0; i <= numSeg; i++){
+//        float t = i/numSeg;
+//        lines.push_back(calcBezier(t));
+//    }
     
     
     

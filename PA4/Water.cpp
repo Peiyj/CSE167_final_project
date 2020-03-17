@@ -14,6 +14,9 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     this->program = program;
     this->model = model;
     normalColor = 0;
+    depthMap = 0;
+    noDistortion = 0;
+    noDUDV = 0;
     drawLine = false;
     moveFactor = 0;
     waveTime = 0;
@@ -112,7 +115,7 @@ Water::Water(GLuint program, int size, float miny, float maxy,
     glUniform1i(glGetUniformLocation(program, "refractionTex"), 4);
     glUniform1i(glGetUniformLocation(program, "dudvTex"), 5);
     glUniform1i(glGetUniformLocation(program, "depthMap"), 6);
-    
+
     
     glBindTexture(GL_TEXTURE_2D, dudvTex);
 
@@ -164,6 +167,9 @@ void Water::draw(){
 //    std::cout << waveTime << std::endl;
     // Bind to the VAO.
     glUniform1i(glGetUniformLocation(program, "isNormalColor"), normalColor);
+    glUniform1i(glGetUniformLocation(program, "showDepthMap"), depthMap);
+    glUniform1i(glGetUniformLocation(program, "noDistortion"), noDistortion);
+//    cout << noDUDV << endl;
     glBindVertexArray(vao);
     // VAO knows to use EBO, which is the last slot in VAO
     
@@ -212,5 +218,11 @@ void Water::switchToDrawLine(){
 }
 void Water::switchToNormal(){
     normalColor = !normalColor;
+}
+void Water::switchToDepthMap(){
+    depthMap = !depthMap;
+}
+void Water::switchToNoDistortion(){
+    noDistortion = !noDistortion;
 }
 

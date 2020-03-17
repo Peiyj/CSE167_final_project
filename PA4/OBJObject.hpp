@@ -24,6 +24,8 @@ private:
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> textures;
+//    glm::vec3 color;
+    
     
     
     GLuint program;
@@ -35,6 +37,7 @@ protected:
     glm::mat4 moved_model;
     glm::mat4 scaled_model;
     glm::mat4 rotated_model;
+    
 public:
 
     OBJObject(const char*, GLuint);
@@ -50,6 +53,7 @@ public:
     void moveAxis(GLfloat x, GLfloat y, GLfloat z);
     
     void setModel(glm::mat4 m) {this->model = m;}
+    void setColor(glm::vec3 c) {this->color = c;}
 };
 
 

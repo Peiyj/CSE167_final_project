@@ -26,5 +26,6 @@ private:
 public:
     virtual void draw(const glm::mat4 &C)=0;
     virtual void update()=0;
+    virtual void switchToToneShading()=0;
 };
 #endif /* Node_hpp */

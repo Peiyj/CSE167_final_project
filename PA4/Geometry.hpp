@@ -16,6 +16,7 @@ private:
     OBJObject* obj;
     GLuint modelLoc;
     GLuint program;
+    GLint toneShading;
     
 public:
     Geometry(const char* str, GLuint program);
@@ -23,5 +24,7 @@ public:
     void draw(const glm::mat4&);
     void update();
     void setLoc();
+    void setColor(glm::vec3& color);
+    void switchToToneShading();
 };
 #endif /* Geometry_hpp */

@@ -26,6 +26,8 @@ uniform sampler2D depthMap;
 
 
 uniform int isNormalColor;
+uniform int showDepthMap;
+uniform int noDistortion;
 uniform float moveFactor;
 
 uniform vec3 viewPos;
@@ -128,6 +130,12 @@ void main()
     vec2 sum = distortion1 + distortion2;
     sum *= clamp(waterDepth/20.0, 0.0, 1.0);
     
+
+    if(noDistortion == 1){
+        sum = vec2(0);
+    }
+    
+    
     refractTexCoord += sum;
     refractTexCoord = clamp(refractTexCoord, 0.001, 0.999);
     
@@ -172,7 +180,9 @@ void main()
     
     
     //test if depth works
-//    fragColor = vec4(waterDepth/50);
+    if(showDepthMap == 1){
+        fragColor = vec4(vec3(waterDepth/200), 1.0);
+    }
 
 }
 

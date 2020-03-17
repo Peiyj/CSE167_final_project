@@ -45,6 +45,9 @@ private:
     glm::mat4 model;
     bool drawLine;
     GLint normalColor;
+    GLint depthMap;
+    GLint noDistortion;
+    GLint noDUDV;
 
     float y;
 public:
@@ -58,6 +61,8 @@ public:
     glm::vec4 calculateOffset(int index1, int index2, int index3);
     void switchToDrawLine();
     void switchToNormal();
+    void switchToDepthMap();
+    void switchToNoDistortion();
 
 };
 #endif /* Water_hpp */

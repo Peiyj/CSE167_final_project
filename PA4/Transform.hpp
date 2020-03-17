@@ -39,6 +39,7 @@ public:
     
     void rotatePlane(float degree);
     void lookAt(glm::vec3& pos, glm::vec3& prevPos);
+    void switchToToneShading();
     
 };
 #endif /* Transform_hpp */

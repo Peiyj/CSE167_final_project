@@ -14,6 +14,7 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 uniform vec3 cameraPos;
+uniform int noDistortion;
 uniform float waveTime;
 
 
@@ -68,11 +69,15 @@ void main()
     vec3 vertex1 = position + vec3(normal_neighbor.x, 0, normal_neighbor.y);
     vec3 vertex2 = position + vec3(normal_neighbor.z, 0, normal_neighbor.w);
     clipSpaceGrid = projection*view*model*vec4(position, 1.0);
-    vec3 distortedPos = applyDistortion(position);
-    
-//    vec3 distortedPos = position;
-    vertex1 = applyDistortion(vertex1);
-    vertex2 = applyDistortion(vertex2);
+    vec3 distortedPos;
+    if(noDistortion == 1){
+        distortedPos = position;
+    }
+    else{
+        distortedPos = applyDistortion(position);
+        vertex1 = applyDistortion(vertex1);
+        vertex2 = applyDistortion(vertex2);
+    }
     
     
     normal = calcNormal(distortedPos, vertex1, vertex2);

@@ -199,6 +199,8 @@ bool Window::initializeObjects()
     // make the body of the plane
     Transform* bodyM = new Transform(glm::mat4(1));
     Geometry* body = new Geometry("./plane/body.obj", normal_program);
+    glm::vec3 color = glm::vec3(1,1,0.3);
+    body->setColor(color);
     bodyM->addChild(body);
     head->addChild(bodyM);
     
@@ -206,6 +208,8 @@ bool Window::initializeObjects()
     // make the nose of the plane
     Transform* noseM = new Transform(glm::mat4(1));
     Geometry* nose = new Geometry("./plane/nose.obj", normal_program);
+    color = glm::vec3(0.8, 0.4, 0.1);
+    nose->setColor(color);
     noseM->addChild(nose);
     head->addChild(noseM);
     needUpdate.push_back(noseM);
@@ -213,11 +217,15 @@ bool Window::initializeObjects()
     // make the front metal of the plane
     Transform* frontM = new Transform(glm::mat4(1));
     Geometry* front = new Geometry("./plane/frontMetal.obj", normal_program);
+    color = glm::vec3(0.1, 0.1, 1);
+    front->setColor(color);
     frontM->addChild(front);
     head->addChild(frontM);
     
     Transform* bladesM = new Transform(glm::mat4(1));
     Geometry* blades = new Geometry("./plane/blades.obj", normal_program);
+    color = glm::vec3(0.9, 0.1, 0.2);
+    blades->setColor(color);
     bladesM->addChild(blades);
     head->addChild(bladesM);
     needUpdate.push_back(bladesM);
@@ -256,6 +264,7 @@ bool Window::initializeObjects()
     
     
     root->moveMatrix(p0);
+    root->scaleMatrix(5);
     prevPos = p0;
     
     
@@ -449,6 +458,17 @@ void Window::displayCallback(GLFWwindow* window)
     
     
     
+    glUseProgram(normal_program);
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(reflectView));
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    glUniform3fv(glGetUniformLocation(normal_program, "dirLight.ambient"), 1, glm::value_ptr(ambient));
+    glUniform3fv(glGetUniformLocation(normal_program, "dirLight.diffuse"), 1, glm::value_ptr(dlight->color));
+    glUniform3fv(glGetUniformLocation(normal_program, "dirLight.specular"), 1, glm::value_ptr(specular));
+    glUniform3fv(glGetUniformLocation(normal_program, "dirLight.direction"), 1, glm::value_ptr(dlight->direction));
+    glUniform3fv(glGetUniformLocation(normal_program, "viewPos"), 1, glm::value_ptr(cameraPos));
+    root->draw(glm::mat4(1));
     
     waterFrameBuffer->unbindFrameBuffer();
 
@@ -489,6 +509,18 @@ void Window::displayCallback(GLFWwindow* window)
     glUniformMatrix4fv(glGetUniformLocation(skyboxProgram, "projection"), 1, GL_FALSE,
                        glm::value_ptr(projection));
     skybox->draw();
+    
+    
+    
+    
+    glUseProgram(normal_program);
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "view"), 1, GL_FALSE,
+                       glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(normal_program, "projection"), 1, GL_FALSE,
+                       glm::value_ptr(projection));
+    glUniform3fv(glGetUniformLocation(normal_program, "viewPos"), 1, glm::value_ptr(cameraPos));
+    root->draw(glm::mat4(1));
+    
     waterFrameBuffer->unbindFrameBuffer();
     
     
@@ -555,17 +587,18 @@ void Window::displayCallback(GLFWwindow* window)
                        glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(normal_program, "projection"), 1, GL_FALSE,
                        glm::value_ptr(projection));
+    glUniform3fv(glGetUniformLocation(normal_program, "viewPos"), 1, glm::value_ptr(cameraPos));
     root->draw(glm::mat4(1));
     
     
-    glUseProgram(curve_program);
-    glUniformMatrix4fv(glGetUniformLocation(curve_program, "view"), 1, GL_FALSE,
-                       glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(curve_program, "projection"), 1, GL_FALSE,
-                       glm::value_ptr(projection));
-    for(Curve* l: line){
-        l->draw();
-    }
+//    glUseProgram(curve_program);
+//    glUniformMatrix4fv(glGetUniformLocation(curve_program, "view"), 1, GL_FALSE,
+//                       glm::value_ptr(view));
+//    glUniformMatrix4fv(glGetUniformLocation(curve_program, "projection"), 1, GL_FALSE,
+//                       glm::value_ptr(projection));
+//    for(Curve* l: line){
+//        l->draw();
+//    }
     
     
 
@@ -688,13 +721,16 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
             case GLFW_KEY_2:
                 water->switchToNormal();
                 break;
-            case GLFW_KEY_F3:
-
+            case GLFW_KEY_3:
+                water->switchToDepthMap();
                 break;
-                
+            case GLFW_KEY_4:
+                water->switchToNoDistortion();
+                break;
             case GLFW_KEY_T:
             {
                 terrain_ds->switchToToneShading();
+                root->switchToToneShading();
                 break;
             }
             case GLFW_KEY_C:
@@ -706,8 +742,36 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
                 break;
             }
             case GLFW_KEY_N:
+            {
                 delete(terrain_ds);
                 terrain_ds = new Terrain(terrainProgram, 0, 0, true);
+                delete(line[0]);
+                delete(line[1]);
+                float terrainMaxHeight = ((terrain_ds->getModel())*(glm::vec4(0, terrain_ds->getMaxy(), 0, 1))).y;
+                float terrainSize = terrain_ds->getSize();
+                float planeHeight = terrainMaxHeight + 5;
+                glm::vec3 p0, p1, p2, p3;
+                p0 = glm::vec3(0, planeHeight, 0);
+                p1 = glm::vec3(-terrainSize/4, planeHeight, terrainSize/4);
+                p2 = glm::vec3(terrainSize/4, planeHeight, terrainSize/4);
+                p3 = p0;
+                line[0] = new Curve(curve_program, p0, p1, p2, p3);
+                p0 = p3;
+                p1 = glm::vec3(-terrainSize/4, planeHeight, -terrainSize/4);
+                p2 = glm::vec3(terrainSize/4, planeHeight, -terrainSize/4);
+                p3 = p0;
+                line[1] = new Curve(curve_program, p0, p1, p2, p3);
+                break;
+            }
+            case GLFW_KEY_EQUAL:
+                if(mods == GLFW_MOD_SHIFT){
+                    root->scaleMatrix(1.1);
+                }
+                break;
+            case GLFW_KEY_MINUS:
+                if(mods == GLFW_MOD_SHIFT){
+                    root->scaleMatrix(0.9);
+                }
                 break;
             default:
                 break;

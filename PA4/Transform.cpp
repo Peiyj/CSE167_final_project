@@ -44,7 +44,7 @@ void Transform::draw(const glm::mat4 &C){
 }
 void Transform::update(){
 //    M = rotated_M*moved_M*glm::mat4(1);
-    M = moved_M*rotated_M* glm::mat4(1);
+    M = moved_M*rotated_M* scaled_M* glm::mat4(1);
 //    M = rotated_M*glm::mat4(1);
 }
 void Transform::startWalking(int forward){
@@ -81,4 +81,10 @@ void Transform::rotatePlane(float degree){
 //    rotated_M = glm::rotate(rotated_M, degree, glm::vec3(0, 1, 0));
     rotated_M = glm::rotate(glm::mat4(1), degree, glm::vec3(0, 1, 0));
 //    update();
+}
+void Transform::switchToToneShading(){
+    
+    for(Node* child: children){
+        child->switchToToneShading();
+    }
 }
