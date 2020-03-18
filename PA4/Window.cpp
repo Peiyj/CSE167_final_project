@@ -99,6 +99,8 @@ namespace
     // enable movement
     bool enableMovement = false;
     
+    // enable light direction spin
+    bool spin = false;
     
     };
 
@@ -386,7 +388,9 @@ void Window::idleCallback()
     root->update();
     
     
-    
+    if (spin){
+        dlight->spin(0.02);
+    }
 }
 
 void Window::displayCallback(GLFWwindow* window)
@@ -771,6 +775,13 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
             case GLFW_KEY_MINUS:
                 if(mods == GLFW_MOD_SHIFT){
                     root->scaleMatrix(0.9);
+                }
+                break;
+            case GLFW_KEY_Q:
+                if(spin == false){
+                    spin = true;
+                } else{
+                    spin = false;
                 }
                 break;
             default:
