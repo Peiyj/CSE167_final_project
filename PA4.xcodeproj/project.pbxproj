@@ -18,6 +18,9 @@
 		AF9F0401241626D9003B6166 /* Cube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF9F03FF241626D9003B6166 /* Cube.cpp */; };
 		AFF5BE68240C757200BCDC92 /* Terrain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFF5BE66240C757200BCDC92 /* Terrain.cpp */; };
 		AFFA1A0F241EEDAE0091AB0E /* Turtle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFFA1A0D241EEDAE0091AB0E /* Turtle.cpp */; };
+		AFFA1A1724205AA20091AB0E /* Curve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFFA1A1024205AA00091AB0E /* Curve.cpp */; };
+		AFFA1A1824205AA20091AB0E /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFFA1A1324205AA10091AB0E /* Geometry.cpp */; };
+		AFFA1A1924205AA20091AB0E /* Transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFFA1A1624205AA20091AB0E /* Transform.cpp */; };
 		CDB9EA88240C77EC001BA2CA /* DirectionalLight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDB9EA86240C77EC001BA2CA /* DirectionalLight.cpp */; };
 		CDB9EA90240D8567001BA2CA /* depthMap.frag in Sources */ = {isa = PBXBuildFile; fileRef = CDB9EA8F240D8567001BA2CA /* depthMap.frag */; };
 		CDB9EA92240D8580001BA2CA /* depthMap.vert in Sources */ = {isa = PBXBuildFile; fileRef = CDB9EA91240D8580001BA2CA /* depthMap.vert */; };
@@ -74,6 +77,13 @@
 		AFF5BE67240C757200BCDC92 /* Terrain.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Terrain.hpp; sourceTree = "<group>"; };
 		AFFA1A0D241EEDAE0091AB0E /* Turtle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Turtle.cpp; sourceTree = "<group>"; };
 		AFFA1A0E241EEDAE0091AB0E /* Turtle.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Turtle.hpp; sourceTree = "<group>"; };
+		AFFA1A1024205AA00091AB0E /* Curve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Curve.cpp; sourceTree = "<group>"; };
+		AFFA1A1124205AA10091AB0E /* Curve.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Curve.hpp; sourceTree = "<group>"; };
+		AFFA1A1224205AA10091AB0E /* Geometry.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Geometry.hpp; sourceTree = "<group>"; };
+		AFFA1A1324205AA10091AB0E /* Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Geometry.cpp; sourceTree = "<group>"; };
+		AFFA1A1424205AA10091AB0E /* Transform.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Transform.hpp; sourceTree = "<group>"; };
+		AFFA1A1524205AA10091AB0E /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
+		AFFA1A1624205AA20091AB0E /* Transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Transform.cpp; sourceTree = "<group>"; };
 		CDB9EA85240C7096001BA2CA /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		CDB9EA86240C77EC001BA2CA /* DirectionalLight.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DirectionalLight.cpp; sourceTree = "<group>"; };
 		CDB9EA87240C77EC001BA2CA /* DirectionalLight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DirectionalLight.h; sourceTree = "<group>"; };
@@ -154,6 +164,13 @@
 		AF8D3882240B47140099F286 /* PA4 */ = {
 			isa = PBXGroup;
 			children = (
+				AFFA1A1024205AA00091AB0E /* Curve.cpp */,
+				AFFA1A1124205AA10091AB0E /* Curve.hpp */,
+				AFFA1A1324205AA10091AB0E /* Geometry.cpp */,
+				AFFA1A1224205AA10091AB0E /* Geometry.hpp */,
+				AFFA1A1524205AA10091AB0E /* Node.hpp */,
+				AFFA1A1624205AA20091AB0E /* Transform.cpp */,
+				AFFA1A1424205AA10091AB0E /* Transform.hpp */,
 				AF9F03FF241626D9003B6166 /* Cube.cpp */,
 				AF9F0400241626D9003B6166 /* Cube.h */,
 				AF04A74B24106404006CE434 /* shaders */,
@@ -266,12 +283,15 @@
 				CDB9EA92240D8580001BA2CA /* depthMap.vert in Sources */,
 				CDB9EA9C24120B24001BA2CA /* WaterFrameBuffer.cpp in Sources */,
 				CDB9EA90240D8567001BA2CA /* depthMap.frag in Sources */,
+				AFFA1A1724205AA20091AB0E /* Curve.cpp in Sources */,
 				AFF5BE68240C757200BCDC92 /* Terrain.cpp in Sources */,
 				AFFA1A0F241EEDAE0091AB0E /* Turtle.cpp in Sources */,
+				AFFA1A1924205AA20091AB0E /* Transform.cpp in Sources */,
 				AF8D3894240B47140099F286 /* shader.cpp in Sources */,
 				AF8D3896240B47140099F286 /* main.cpp in Sources */,
 				CDB9EAA224120DC9001BA2CA /* Shadow.cpp in Sources */,
 				AF8D3893240B47140099F286 /* Window.cpp in Sources */,
+				AFFA1A1824205AA20091AB0E /* Geometry.cpp in Sources */,
 				AF04A75B2410A2AD006CE434 /* WaterFrameBuffer.cpp in Sources */,
 				CDB9EAA52412142F001BA2CA /* shadowMap.frag in Sources */,
 				CDB9EA88240C77EC001BA2CA /* DirectionalLight.cpp in Sources */,
